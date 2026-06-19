@@ -1070,7 +1070,8 @@
 
 		edit.setAttribute('aria-label', t('manager.design.colors.edit_action'));
 		edit.setAttribute('title', t('manager.design.colors.edit_action'));
-		edit.setAttribute('data-color-edit', itemId);
+		edit.setAttribute('data-color-edit', entityType);
+		edit.setAttribute('data-color-id', String(itemId || ''));
 		edit.setAttribute('data-color-entity', entityType);
 
 		remove.setAttribute('aria-label', t('manager.pages.actions.delete'));
@@ -1323,12 +1324,19 @@
 		return createPatternDraft(item);
 	}
 
-	function openFormModal(entityType, itemId) {
-		var item = itemId ? getItemById(entityType, itemId) : null;
+	function openColorLibraryFormModal(entityType, mode, itemId) {
+		var type = String(entityType || getCurrentEntityType());
+		var normalizedMode = mode === 'edit' ? 'edit' : 'create';
+		var id = String(itemId || '');
+		var item = normalizedMode === 'edit' && id ? getItemById(type, id) : null;
 		var draft;
 
-		draft = createDraft(entityType, item);
-		if (entityType === 'pattern' && !item) {
+		if (normalizedMode === 'edit' && !item) {
+			return;
+		}
+
+		draft = createDraft(type, item);
+		if (type === 'pattern' && normalizedMode === 'create') {
 			draft.editor_kind = '';
 			draft.pattern_type = '';
 			draft.colors = {};
@@ -1337,24 +1345,30 @@
 
 		state.modal = {
 			kind: 'form',
-			type: entityType,
-			entityType: entityType,
-			itemId: itemId || '',
-			mode: item ? 'edit' : 'create',
+			type: type,
+			entityType: type,
+			itemId: item ? String(item.id || '') : '',
+			mode: normalizedMode,
 			draft: draft,
-			patternType: entityType === 'pattern' ? String(draft.pattern_type || '') : '',
-			patternSourceSelected: entityType === 'pattern' ? !!item : true,
+			patternType: type === 'pattern' ? String(draft.pattern_type || '') : '',
+			patternSourceSelected: type === 'pattern' ? normalizedMode === 'edit' : true,
 			showTypePicker: false,
-			editorKind: entityType === 'pattern' ? String(draft.editor_kind || 'graphic') : '',
-			generatorExpanded: entityType === 'pattern' ? true : false,
-			groupOpen: entityType === 'pattern' && draft.editor_kind && draft.pattern_type ? createPatternGroupState(String(draft.editor_kind || 'graphic'), String(draft.pattern_type || '')) : {},
+			editorKind: type === 'pattern' ? String(draft.editor_kind || 'graphic') : '',
+			generatorExpanded: type === 'pattern' ? true : false,
+			groupOpen: type === 'pattern' && draft.editor_kind && draft.pattern_type ? createPatternGroupState(String(draft.editor_kind || 'graphic'), String(draft.pattern_type || '')) : {},
 			errors: {},
 			errorHelpers: {},
 			loading: false,
 			scrollTop: 0
 		};
+
+		state.helpOpen = false;
 		setMessage('', '');
 		render();
+	}
+
+	function openFormModal(entityType, itemId) {
+		openColorLibraryFormModal(entityType, itemId ? 'edit' : 'create', itemId || '');
 	}
 
 	function replaceNamePlaceholder(text, name) {
@@ -3233,79 +3247,93 @@
 			});
 	}
 
-	root.addEventListener('click', function (event) {
-		var openLibrary = event.target.closest('[data-color-open-library]');
-		var back = event.target.closest('[data-color-back]');
-		var tab = event.target.closest('[data-color-tab]');
-		var create = event.target.closest('[data-color-create]');
-		var edit = event.target.closest('[data-color-edit]');
-		var remove = event.target.closest('[data-color-delete]');
-		var close = event.target.closest('[data-color-close-modal]');
-		var save = event.target.closest('[data-color-save-modal]');
-		var dismiss = event.target.closest('[data-color-dismiss-message]');
-		var helpToggle = event.target.closest('[data-color-help-toggle]');
-		var overlay = event.target.closest('[data-color-modal-overlay]');
-		var swatchButton = event.target.closest('[data-color-swatch-button]');
-		var angleChip = event.target.closest('[data-color-angle]');
-		var optionChip = event.target.closest('[data-color-option-field]');
-		var patternType = event.target.closest('[data-color-pattern-type]');
-		var mediaUpload = event.target.closest('[data-color-media-upload]');
-		var mediaOpenLibrary = event.target.closest('[data-color-media-open-library]');
-		var mediaSelect = event.target.closest('[data-color-media-select]');
-		var mediaRemove = event.target.closest('[data-color-media-remove]');
-		var patternEditorKind = event.target.closest('[data-color-pattern-editor-kind]');
-		var patternBackToChoice = event.target.closest('[data-color-pattern-back-to-choice]');
-		var patternSource = event.target.closest('[data-pattern-source]');
-		var patternBackSource = event.target.closest('[data-pattern-back-source]');
-		var patternSimpleType = event.target.closest('[data-pattern-type]');
-		var patternSimpleSwitch = event.target.closest('[data-pattern-setting][role="switch"]');
+	function handleColorControllerClick(event) {
+		var target = event.target;
+		if (!target || !root) {
+			return;
+		}
+
+		var openLibrary = target.closest('[data-color-open-library]');
+		var back = target.closest('[data-color-back]');
+		var tab = target.closest('[data-color-tab]');
+		var create = target.closest('[data-color-create]');
+		var edit = target.closest('[data-color-edit]');
+		var remove = target.closest('[data-color-delete]');
+		var close = target.closest('[data-color-close-modal]');
+		var save = target.closest('[data-color-save-modal]');
+		var dismiss = target.closest('[data-color-dismiss-message]');
+		var helpToggle = target.closest('[data-color-help-toggle]');
+		var overlay = target.closest('[data-color-modal-overlay]');
+		var swatchButton = target.closest('[data-color-swatch-button]');
+		var angleChip = target.closest('[data-color-angle]');
+		var optionChip = target.closest('[data-color-option-field]');
+		var patternType = target.closest('[data-color-pattern-type]');
+		var mediaUpload = target.closest('[data-color-media-upload]');
+		var mediaOpenLibrary = target.closest('[data-color-media-open-library]');
+		var mediaSelect = target.closest('[data-color-media-select]');
+		var mediaRemove = target.closest('[data-color-media-remove]');
+		var patternEditorKind = target.closest('[data-color-pattern-editor-kind]');
+		var patternBackToChoice = target.closest('[data-color-pattern-back-to-choice]');
+		var patternSource = target.closest('[data-pattern-source]');
+		var patternBackSource = target.closest('[data-pattern-back-source]');
+		var patternSimpleType = target.closest('[data-pattern-type]');
+		var patternSimpleSwitch = target.closest('[data-pattern-setting][role="switch"]');
 		var fileInput;
 		var mediaItem;
 
 		if (openLibrary) {
+			event.preventDefault();
 			state.view = 'library';
 			state.helpOpen = false;
 			render();
 			return;
 		}
 
-			if (back) {
-				state.view = 'landing';
-				state.helpOpen = false;
-				setMessage('', '');
-				render();
-				return;
-			}
+		if (back) {
+			event.preventDefault();
+			state.view = 'landing';
+			state.helpOpen = false;
+			state.modal = null;
+			setMessage('', '');
+			render();
+			return;
+		}
 
-			if (tab) {
-				state.activeTab = tab.getAttribute('data-color-tab') || 'colors';
-				state.helpOpen = false;
-				setMessage('', '');
-				render();
-				return;
-			}
+		if (tab) {
+			event.preventDefault();
+			state.activeTab = tab.getAttribute('data-color-tab') || 'colors';
+			state.helpOpen = false;
+			setMessage('', '');
+			render();
+			return;
+		}
 
 		if (create) {
-			openFormModal(create.getAttribute('data-color-create') || getCurrentEntityType());
+			event.preventDefault();
+			openColorLibraryFormModal(String(create.getAttribute('data-color-create') || getCurrentEntityType()), 'create', null);
 			return;
 		}
 
 		if (edit) {
-			openFormModal(edit.getAttribute('data-color-entity') || getCurrentEntityType(), edit.getAttribute('data-color-edit') || '');
+			event.preventDefault();
+			openColorLibraryFormModal(String(edit.getAttribute('data-color-edit') || edit.getAttribute('data-color-entity') || getCurrentEntityType()), 'edit', String(edit.getAttribute('data-color-id') || ''));
 			return;
 		}
 
 		if (remove) {
+			event.preventDefault();
 			openDeleteModal(remove.getAttribute('data-color-entity') || getCurrentEntityType(), remove.getAttribute('data-color-delete') || '', remove);
 			return;
 		}
 
 		if (close) {
+			event.preventDefault();
 			closeModal();
 			return;
 		}
 
 		if (save) {
+			event.preventDefault();
 			submitModal();
 			return;
 		}
@@ -3369,11 +3397,12 @@
 			return;
 		}
 
-			if (dismiss) {
-				setMessage('', '');
-				render();
-				return;
-			}
+		if (dismiss) {
+			event.preventDefault();
+			setMessage('', '');
+			render();
+			return;
+		}
 
 		var patternGroupToggle = event.target.closest('[data-color-pattern-group-toggle]');
 		var patternGeneratorToggle = event.target.closest('[data-color-pattern-generator-toggle]');
@@ -3389,6 +3418,7 @@
 		}
 
 		if (helpToggle) {
+			event.preventDefault();
 			state.helpOpen = !state.helpOpen;
 			render();
 			return;
@@ -3446,7 +3476,9 @@
 		if (overlay && event.target === overlay) {
 			closeModal();
 		}
-	});
+	}
+
+	root.addEventListener('click', handleColorControllerClick);
 
 	root.addEventListener('input', function (event) {
 		var field = event.target.closest('[data-color-modal-field]');
