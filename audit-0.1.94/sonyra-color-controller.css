@@ -1,0 +1,1078 @@
+.sonyra-color-controller {
+	display: grid;
+	gap: 20px;
+	min-width: 0;
+}
+
+.sonyra-color-controller__app,
+.sonyra-color-controller__workspace {
+	display: grid;
+	gap: 18px;
+	min-width: 0;
+}
+
+.sonyra-color-controller__tool-card {
+	background: rgba(255, 255, 255, 0.82);
+	backdrop-filter: blur(20px);
+	border: 1px solid rgba(148, 163, 184, 0.16);
+	border-radius: 28px;
+	box-shadow: 0 24px 64px rgba(15, 23, 42, 0.08);
+	display: grid;
+	gap: 20px;
+	padding: 22px;
+}
+
+.sonyra-color-controller__tool-card-head {
+	align-items: flex-start;
+	display: grid;
+	gap: 14px;
+	grid-template-columns: 52px minmax(0, 1fr);
+}
+
+.sonyra-color-controller__tool-card-copy {
+	display: grid;
+	gap: 4px;
+	min-width: 0;
+}
+
+.sonyra-color-controller__tool-card-icon {
+	align-items: center;
+	background: linear-gradient(135deg, rgba(238, 242, 255, 0.96), rgba(255, 255, 255, 0.72));
+	border: 1px solid rgba(99, 102, 241, 0.2);
+	border-radius: 18px;
+	box-shadow: 0 14px 30px rgba(79, 70, 229, 0.12);
+	display: inline-flex;
+	height: 52px;
+	justify-content: center;
+	width: 52px;
+}
+
+.sonyra-color-controller__tool-card-icon::before {
+	background: linear-gradient(135deg, rgba(79, 70, 229, 0.92), rgba(236, 72, 153, 0.78));
+	border-radius: 999px;
+	content: "";
+	height: 22px;
+	width: 22px;
+}
+
+.sonyra-color-controller__tool-card-title {
+	color: var(--sonyra-manager-text);
+	font-size: 20px;
+	font-weight: 760;
+	line-height: 1.25;
+	margin: 0;
+}
+
+.sonyra-color-controller__tool-card-description {
+	color: var(--sonyra-manager-muted);
+	font-size: 15px;
+	line-height: 1.62;
+	margin: 8px 0 0;
+	max-width: 920px;
+}
+
+.sonyra-color-controller__tool-card-footer {
+	align-items: center;
+	display: grid;
+	gap: 12px;
+	grid-template-columns: 52px minmax(0, 1fr) auto;
+}
+
+.sonyra-color-controller__tool-card-footer-spacer {
+	min-height: 1px;
+}
+
+.sonyra-color-controller__landing .sonyra-manager-meta-chip-group {
+	grid-column: 2;
+	justify-self: start;
+}
+
+.sonyra-color-controller__landing [data-color-open-library] {
+	grid-column: 3;
+	justify-self: end;
+}
+
+.sonyra-color-controller__context {
+	align-items: center;
+}
+
+.sonyra-color-controller__context-actions,
+.sonyra-color-controller__toolbar-actions {
+	align-items: center;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 12px;
+}
+
+.sonyra-color-controller__toolbar-actions {
+	justify-content: flex-end;
+}
+
+.sonyra-color-controller__tabs {
+	width: 100%;
+}
+
+.sonyra-color-controller__grid {
+	display: grid;
+	gap: 16px;
+}
+
+.sonyra-color-controller__grid-colors {
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.sonyra-color-controller__grid-gradients,
+.sonyra-color-controller__grid-patterns {
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.sonyra-color-controller__entity-card {
+	background: rgba(248, 250, 252, 0.82);
+	border: 1px solid rgba(148, 163, 184, 0.18);
+	border-radius: 20px;
+	box-shadow: 0 18px 44px rgba(30, 41, 59, 0.08);
+	min-width: 0;
+	padding: 16px;
+}
+
+.sonyra-color-controller__entity-row {
+	align-items: start;
+	display: grid;
+	gap: 14px;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	min-width: 0;
+	width: 100%;
+}
+
+.sonyra-color-controller__entity-preview {
+	align-items: center;
+	align-self: start;
+	display: flex;
+	justify-content: center;
+	overflow: hidden;
+}
+
+.sonyra-color-controller__entity-preview-color {
+	height: 44px;
+	width: 44px;
+}
+
+.sonyra-color-controller__entity-preview-gradient,
+.sonyra-color-controller__entity-preview-pattern {
+	height: 76px;
+	width: 124px;
+}
+
+.sonyra-color-controller__swatch {
+	border: 1px solid rgba(148, 163, 184, 0.28);
+	border-radius: 12px;
+	box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.46);
+	display: inline-flex;
+	height: 36px;
+	width: 36px;
+}
+
+.sonyra-color-controller__swatch.is-large {
+	border-radius: 14px;
+	height: 44px;
+	width: 44px;
+}
+
+.sonyra-color-controller__entity-preview-gradient .sonyra-color-controller__gradient-preview,
+.sonyra-color-controller__entity-preview-pattern .sonyra-color-controller__pattern-preview {
+	border-radius: 16px;
+	height: 100%;
+	min-height: 0;
+	width: 100%;
+}
+
+.sonyra-color-controller__entity-preview-gradient .sonyra-color-controller__gradient-preview.is-large,
+.sonyra-color-controller__entity-preview-pattern .sonyra-color-controller__pattern-preview.is-large {
+	min-height: 0;
+}
+
+.sonyra-color-controller__entity-content {
+	min-width: 0;
+}
+
+.sonyra-color-controller__entity-copy {
+	display: grid;
+	gap: 8px;
+	grid-template-rows: auto auto auto;
+	min-width: 0;
+}
+
+.sonyra-color-controller__entity-title {
+	color: var(--sonyra-manager-text);
+	display: -webkit-box;
+	font-size: 16px;
+	font-weight: 780;
+	line-height: 1.3;
+	max-height: calc(1.3em * 2);
+	overflow: hidden;
+	overflow-wrap: anywhere;
+	text-overflow: ellipsis;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+}
+
+.sonyra-color-controller__entity-meta {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	max-width: 100%;
+}
+
+.sonyra-color-controller__entity-meta-stack {
+	align-items: start;
+	display: grid;
+	gap: 6px;
+	justify-items: start;
+}
+
+.sonyra-color-controller__entity-meta .sonyra-manager-meta-chip,
+.sonyra-color-controller__entity-meta-stack .sonyra-manager-meta-chip {
+	max-width: 100%;
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.sonyra-color-controller__entity-meta-stack .sonyra-manager-meta-chip {
+	display: -webkit-box;
+	line-height: 1.35;
+	max-width: 100%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: normal;
+	word-break: break-word;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+}
+
+.sonyra-color-controller__entity-actions {
+	align-items: center;
+	align-self: start;
+	display: inline-flex;
+	flex-shrink: 0;
+	gap: 8px;
+	justify-content: flex-end;
+	white-space: nowrap;
+}
+
+.sonyra-color-controller__entity-updated {
+	color: var(--sonyra-manager-muted);
+	font-size: 12px;
+	font-weight: 640;
+	line-height: 1.5;
+}
+
+.sonyra-color-controller__type-chip {
+	background: rgba(79, 70, 229, 0.08);
+	color: #5b21b6;
+}
+
+.sonyra-color-controller__value-chip {
+	background: rgba(148, 163, 184, 0.12);
+	color: #334155;
+}
+
+.sonyra-color-controller__entity-card:hover,
+.sonyra-color-controller__entity-card:focus-within {
+	background: rgba(255, 255, 255, 0.94);
+	border-color: rgba(99, 102, 241, 0.24);
+	box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.08);
+}
+
+.sonyra-color-controller__gradient-preview,
+.sonyra-color-controller__pattern-preview {
+	border: 1px solid rgba(148, 163, 184, 0.18);
+	border-radius: 18px;
+	min-height: 124px;
+	overflow: hidden;
+	position: relative;
+}
+
+.sonyra-color-controller__gradient-preview.is-large,
+.sonyra-color-controller__pattern-preview.is-large {
+	min-height: 148px;
+}
+
+.sonyra-color-controller__pattern-overlay,
+.sonyra-color-controller__pattern-wave,
+.sonyra-color-controller__pattern-texture,
+.sonyra-color-controller__pattern-noise,
+.sonyra-color-controller__pattern-rings {
+	inset: 0;
+	position: absolute;
+}
+
+.sonyra-color-controller__empty {
+	align-items: center;
+	background: rgba(248, 250, 252, 0.72);
+	border: 1px dashed rgba(148, 163, 184, 0.24);
+	border-radius: 24px;
+	display: grid;
+	gap: 8px;
+	justify-items: start;
+	padding: 24px;
+}
+
+.sonyra-color-controller__empty strong {
+	color: var(--sonyra-manager-text);
+	font-size: 16px;
+	line-height: 1.25;
+}
+
+.sonyra-color-controller__empty p {
+	color: var(--sonyra-manager-muted);
+	font-size: 14px;
+	line-height: 1.6;
+	margin: 0;
+	max-width: 620px;
+}
+
+.sonyra-color-controller__notice {
+	align-items: center;
+	background: rgba(255, 255, 255, 0.9);
+	border: 1px solid rgba(148, 163, 184, 0.18);
+	border-radius: 18px;
+	box-shadow: 0 18px 42px rgba(15, 23, 42, 0.08);
+	display: flex;
+	gap: 12px;
+	justify-content: space-between;
+	padding: 14px 16px;
+}
+
+.sonyra-color-controller__notice-success {
+	background: rgba(236, 253, 245, 0.92);
+	border-color: rgba(16, 185, 129, 0.22);
+	color: #065f46;
+}
+
+.sonyra-color-controller__notice-error {
+	background: rgba(254, 242, 242, 0.96);
+	border-color: rgba(239, 68, 68, 0.22);
+	color: #991b1b;
+}
+
+.sonyra-color-controller__notice-text {
+	font-size: 14px;
+	font-weight: 700;
+	line-height: 1.5;
+}
+
+.sonyra-color-controller__notice-close {
+	background: transparent;
+	border: 0;
+	border-radius: 999px;
+	color: currentColor;
+	height: 32px;
+	padding: 0;
+	width: 32px;
+}
+
+.sonyra-color-controller__modal-form {
+	display: grid;
+	gap: 16px;
+}
+
+.sonyra-color-controller__pattern-type-chooser {
+	display: grid;
+	gap: 14px;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.sonyra-color-controller__pattern-type-card {
+	background: rgba(248, 250, 252, 0.9);
+	border: 1px solid rgba(148, 163, 184, 0.18);
+	border-radius: 22px;
+	color: var(--sonyra-manager-text);
+	display: grid;
+	gap: 8px;
+	padding: 18px;
+	text-align: left;
+}
+
+.sonyra-color-controller__pattern-type-card-title {
+	font-size: 16px;
+	font-weight: 780;
+	line-height: 1.35;
+}
+
+.sonyra-color-controller__pattern-type-card-description {
+	color: var(--sonyra-manager-muted);
+	font-size: 13px;
+	line-height: 1.55;
+}
+
+.sonyra-color-controller__modal-panel {
+	width: min(820px, calc(100vw - 64px));
+}
+
+.sonyra-color-controller__modal-panel-pattern {
+	height: min(860px, calc(100vh - 64px));
+	width: min(1120px, calc(100vw - 64px));
+}
+
+.sonyra-color-controller__modal-body-pattern {
+	min-height: 0;
+	overflow: hidden;
+	padding: 0;
+}
+
+.sonyra-color-controller__pattern-editor {
+	display: grid;
+	grid-template-columns: minmax(320px, 388px) minmax(0, 1fr);
+	gap: 0;
+	height: 100%;
+	min-height: 0;
+	overflow: hidden;
+}
+
+.sonyra-color-controller__pattern-result-panel {
+	align-content: start;
+	background: linear-gradient(180deg, rgba(248, 250, 252, 0.9), rgba(241, 245, 249, 0.84));
+	border-right: 1px solid rgba(226, 232, 240, 0.72);
+	display: grid;
+	min-width: 0;
+	padding: 22px;
+	position: sticky;
+	top: 0;
+	z-index: 1;
+}
+
+.sonyra-color-controller__pattern-result-card {
+	background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.94));
+	border: 1px solid rgba(148, 163, 184, 0.16);
+	border-radius: 28px;
+	box-shadow: 0 20px 48px rgba(15, 23, 42, 0.08);
+	display: grid;
+	gap: 16px;
+	padding: 18px;
+}
+
+.sonyra-color-controller__pattern-result-meta,
+.sonyra-color-controller__pattern-result-copy {
+	display: grid;
+	gap: 12px;
+	min-width: 0;
+}
+
+.sonyra-color-controller__pattern-result-top {
+	align-items: start;
+	display: grid;
+	gap: 14px;
+	grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.sonyra-color-controller__pattern-result-actions {
+	display: flex;
+	justify-content: flex-end;
+}
+
+.sonyra-color-controller__pattern-result-chip {
+	justify-self: start;
+}
+
+.sonyra-color-controller__pattern-result-preview {
+	background: rgba(248, 250, 252, 0.82);
+	border: 1px solid rgba(226, 232, 240, 0.88);
+	border-radius: 22px;
+	padding: 12px;
+}
+
+.sonyra-color-controller__pattern-result-preview .sonyra-color-controller__pattern-preview {
+	aspect-ratio: 16 / 9;
+	min-height: 0;
+}
+
+.sonyra-color-controller__pattern-controls-panel {
+	display: grid;
+	min-width: 0;
+}
+
+.sonyra-color-controller__pattern-controls-scroll {
+	align-content: start;
+	display: grid;
+	gap: 14px;
+	max-height: 100%;
+	min-height: 0;
+	overflow-y: auto;
+	padding: 20px 20px 112px;
+}
+
+.sonyra-color-controller__pattern-accordion {
+	background: rgba(248, 250, 252, 0.62);
+	border: 1px solid rgba(148, 163, 184, 0.16);
+	border-radius: 20px;
+	display: grid;
+	gap: 12px;
+	padding: 14px;
+}
+
+.sonyra-color-controller__pattern-accordion-toggle {
+	align-items: center;
+	background: transparent;
+	border: 0;
+	cursor: pointer;
+	display: flex;
+	font: inherit;
+	justify-content: space-between;
+	padding: 0;
+	text-align: left;
+	width: 100%;
+}
+
+.sonyra-color-controller__pattern-accordion-head {
+	display: grid;
+	gap: 4px;
+	min-width: 0;
+}
+
+.sonyra-color-controller__pattern-accordion-title {
+	color: var(--sonyra-manager-text);
+	font-size: 13px;
+	font-weight: 780;
+	letter-spacing: 0.04em;
+	line-height: 1.4;
+	text-transform: uppercase;
+}
+
+.sonyra-color-controller__pattern-accordion-summary {
+	color: var(--sonyra-manager-muted);
+	font-size: 12px;
+	font-weight: 620;
+	line-height: 1.4;
+}
+
+.sonyra-color-controller__pattern-accordion-chevron {
+	border-bottom: 2px solid rgba(100, 116, 139, 0.9);
+	border-right: 2px solid rgba(100, 116, 139, 0.9);
+	display: inline-block;
+	height: 10px;
+	margin-right: 4px;
+	transform: rotate(45deg);
+	transition: transform 0.18s ease;
+	width: 10px;
+}
+
+.sonyra-color-controller__pattern-accordion-toggle[aria-expanded="false"] .sonyra-color-controller__pattern-accordion-chevron {
+	transform: rotate(-45deg);
+}
+
+.sonyra-color-controller__pattern-accordion-body,
+.sonyra-color-controller__pattern-group-fields,
+.sonyra-color-controller__pattern-generator-group {
+	display: grid;
+	gap: 14px;
+}
+
+.sonyra-color-controller__pattern-result-meta .sonyra-manager-pages-field {
+	margin: 0;
+}
+
+.sonyra-color-controller__pattern-range {
+	display: grid;
+	gap: 10px;
+}
+
+.sonyra-color-controller__pattern-range-row {
+	align-items: center;
+	display: grid;
+	gap: 10px;
+	grid-template-columns: minmax(0, 180px) auto;
+}
+
+.sonyra-color-controller__pattern-range input[type="range"] {
+	--sonyra-range-fill: 0%;
+	appearance: none;
+	background: linear-gradient(90deg, var(--sonyra-manager-primary) 0 var(--sonyra-range-fill), rgba(203, 213, 225, 0.72) var(--sonyra-range-fill) 100%);
+	border-radius: 999px;
+	height: 6px;
+	outline: none;
+	width: 100%;
+}
+
+.sonyra-color-controller__pattern-range input[type="range"]::-webkit-slider-runnable-track {
+	appearance: none;
+	background: transparent;
+	height: 6px;
+}
+
+.sonyra-color-controller__pattern-range input[type="range"]::-webkit-slider-thumb {
+	appearance: none;
+	background: #ffffff;
+	border: 2px solid var(--sonyra-manager-primary);
+	border-radius: 999px;
+	box-shadow: 0 6px 14px rgba(30, 41, 59, 0.16);
+	cursor: pointer;
+	height: 16px;
+	margin-top: -5px;
+	width: 16px;
+}
+
+.sonyra-color-controller__pattern-range input[type="range"]::-moz-range-track {
+	background: rgba(203, 213, 225, 0.72);
+	border: 0;
+	border-radius: 999px;
+	height: 6px;
+}
+
+.sonyra-color-controller__pattern-range input[type="range"]::-moz-range-progress {
+	background: var(--sonyra-manager-primary);
+	border-radius: 999px;
+	height: 6px;
+}
+
+.sonyra-color-controller__pattern-range input[type="range"]::-moz-range-thumb {
+	background: #ffffff;
+	border: 2px solid var(--sonyra-manager-primary);
+	border-radius: 999px;
+	box-shadow: 0 6px 14px rgba(30, 41, 59, 0.16);
+	cursor: pointer;
+	height: 16px;
+	width: 16px;
+}
+
+.sonyra-color-controller__pattern-range-value {
+	color: var(--sonyra-manager-text);
+	font-size: 12px;
+	font-weight: 760;
+	line-height: 1.2;
+	min-width: 48px;
+	text-align: right;
+}
+
+.sonyra-color-controller__pattern-switch-row {
+	align-items: center;
+	display: grid;
+	gap: 12px;
+	grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.sonyra-color-controller__pattern-switch-copy {
+	display: grid;
+	gap: 4px;
+	min-width: 0;
+}
+
+.sonyra-color-controller__pattern-switch-label {
+	color: var(--sonyra-manager-text);
+	font-size: 14px;
+	font-weight: 700;
+	line-height: 1.5;
+}
+
+.sonyra-color-controller__pattern-switch-helper {
+	color: var(--sonyra-manager-muted);
+	font-size: 12px;
+	line-height: 1.45;
+}
+
+.sonyra-color-controller__pattern-switch {
+	justify-self: start;
+	min-width: 54px;
+	padding-inline: 8px;
+}
+
+.sonyra-color-controller__position-grid {
+	display: grid;
+	gap: 8px;
+	grid-template-columns: repeat(3, 36px);
+}
+
+.sonyra-color-controller__position-cell {
+	background: rgba(255, 255, 255, 0.92);
+	border: 1px solid rgba(148, 163, 184, 0.24);
+	border-radius: 12px;
+	height: 36px;
+	position: relative;
+	width: 36px;
+}
+
+.sonyra-color-controller__position-cell::after {
+	background: rgba(99, 102, 241, 0.24);
+	border-radius: 999px;
+	content: "";
+	height: 10px;
+	left: 50%;
+	position: absolute;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	width: 10px;
+}
+
+.sonyra-color-controller__position-cell.is-active {
+	border-color: rgba(109, 40, 217, 0.34);
+	box-shadow: 0 0 0 3px rgba(109, 40, 217, 0.08);
+}
+
+.sonyra-color-controller__field-helper,
+.sonyra-color-controller__field-error {
+	display: block;
+	font-size: 12px;
+	line-height: 1.5;
+	margin-top: 8px;
+}
+
+.sonyra-color-controller__field-helper {
+	color: var(--sonyra-manager-muted);
+}
+
+.sonyra-color-controller__field-error {
+	color: #b91c1c;
+	font-weight: 700;
+}
+
+.sonyra-color-controller__swatch-control {
+	align-items: center;
+	display: grid;
+	gap: 12px;
+	grid-template-columns: auto minmax(0, 1fr);
+	position: relative;
+}
+
+.sonyra-color-controller__swatch-button {
+	align-items: center;
+	background: rgba(255, 255, 255, 0.94);
+	border: 1px solid rgba(148, 163, 184, 0.22);
+	border-radius: 14px;
+	display: inline-flex;
+	height: 48px;
+	justify-content: center;
+	padding: 0;
+	width: 48px;
+}
+
+.sonyra-color-controller__native-picker {
+	height: 1px;
+	opacity: 0;
+	pointer-events: none;
+	position: absolute;
+	width: 1px;
+}
+
+.sonyra-color-controller__hex-input {
+	font-family: inherit;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+}
+
+.sonyra-color-controller__editor-preview-row {
+	align-items: center;
+	display: flex;
+	gap: 14px;
+}
+
+.sonyra-color-controller__editor-color-preview {
+	border: 1px solid rgba(148, 163, 184, 0.22);
+	border-radius: 18px;
+	height: 70px;
+	width: 100px;
+}
+
+.sonyra-color-controller__editor-preview-copy {
+	color: var(--sonyra-manager-muted);
+	font-size: 13px;
+	font-weight: 620;
+	line-height: 1.5;
+}
+
+.sonyra-color-controller__direction-control,
+.sonyra-color-controller__option-chips {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+}
+
+.sonyra-color-controller__pattern-gallery {
+	display: grid;
+	gap: 18px;
+}
+
+.sonyra-color-controller__pattern-gallery-grid {
+	display: grid;
+	gap: 12px;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.sonyra-color-controller__pattern-generator-grid {
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.sonyra-color-controller__pattern-tile {
+	background: rgba(248, 250, 252, 0.9);
+	border: 1px solid rgba(148, 163, 184, 0.18);
+	border-radius: 18px;
+	display: grid;
+	gap: 10px;
+	grid-template-rows: auto minmax(0, auto);
+	min-width: 0;
+	padding: 10px;
+	text-align: left;
+}
+
+.sonyra-color-controller__pattern-tile.is-active {
+	border-color: rgba(109, 40, 217, 0.34);
+	box-shadow: 0 0 0 3px rgba(109, 40, 217, 0.08);
+}
+
+.sonyra-color-controller__pattern-tile .sonyra-color-controller__pattern-preview {
+	aspect-ratio: 16 / 10;
+	background-position: center;
+	background-repeat: no-repeat;
+	min-height: 0;
+}
+
+.sonyra-color-controller__pattern-tile-copy {
+	display: grid;
+	gap: 4px;
+	min-width: 0;
+}
+
+.sonyra-color-controller__pattern-tile-title {
+	color: var(--sonyra-manager-text);
+	font-size: 13px;
+	font-weight: 760;
+	line-height: 1.35;
+}
+
+.sonyra-color-controller__pattern-tile-description {
+	color: var(--sonyra-manager-muted);
+	display: -webkit-box;
+	font-size: 12px;
+	line-height: 1.45;
+	overflow: hidden;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+}
+
+.sonyra-color-controller__media-block {
+	display: grid;
+	gap: 12px;
+}
+
+.sonyra-color-controller__media-preview {
+	align-items: center;
+	background: rgba(248, 250, 252, 0.78);
+	border: 1px solid rgba(148, 163, 184, 0.18);
+	border-radius: 18px;
+	display: grid;
+	gap: 14px;
+	grid-template-columns: 92px minmax(0, 1fr);
+	padding: 12px;
+}
+
+.sonyra-color-controller__media-preview-image,
+.sonyra-color-controller__media-thumb {
+	border-radius: 14px;
+	display: block;
+	height: 92px;
+	object-fit: cover;
+	width: 92px;
+}
+
+.sonyra-color-controller__media-preview-copy,
+.sonyra-color-controller__media-copy {
+	display: grid;
+	gap: 4px;
+	min-width: 0;
+}
+
+.sonyra-color-controller__media-name {
+	color: var(--sonyra-manager-text);
+	font-size: 13px;
+	font-weight: 740;
+	line-height: 1.35;
+}
+
+.sonyra-color-controller__media-meta,
+.sonyra-color-controller__media-state {
+	color: var(--sonyra-manager-muted);
+	font-size: 12px;
+	line-height: 1.45;
+	margin: 0;
+}
+
+.sonyra-color-controller__media-state.is-error {
+	color: #991b1b;
+}
+
+.sonyra-color-controller__media-actions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+}
+
+.sonyra-color-controller__media-library {
+	display: grid;
+	gap: 12px;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.sonyra-color-controller__media-library-title {
+	color: var(--sonyra-manager-text);
+	font-size: 13px;
+	font-weight: 760;
+	line-height: 1.4;
+}
+
+.sonyra-color-controller__media-tile {
+	background: rgba(248, 250, 252, 0.9);
+	border: 1px solid rgba(148, 163, 184, 0.18);
+	border-radius: 18px;
+	display: grid;
+	gap: 10px;
+	padding: 10px;
+	text-align: left;
+}
+
+.sonyra-color-controller__help-popover {
+	max-width: 320px;
+}
+
+.sonyra-color-controller__help-title {
+	color: var(--sonyra-manager-text);
+	display: block;
+	font-size: 14px;
+	font-weight: 800;
+	line-height: 1.35;
+	margin-bottom: 6px;
+}
+
+.sonyra-color-controller__help-body {
+	color: var(--sonyra-manager-muted);
+	font-size: 13px;
+	line-height: 1.6;
+	margin: 0;
+}
+
+@media (max-width: 1380px) {
+	.sonyra-color-controller__grid-colors {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+
+	.sonyra-color-controller__grid-gradients,
+	.sonyra-color-controller__grid-patterns,
+	.sonyra-color-controller__media-library {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+@media (max-width: 1100px) {
+	.sonyra-color-controller__grid-colors,
+	.sonyra-color-controller__grid-gradients,
+	.sonyra-color-controller__grid-patterns,
+	.sonyra-color-controller__media-library {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+@media (max-width: 860px) {
+	.sonyra-color-controller__tool-card-footer,
+	.sonyra-color-controller__toolbar-actions {
+		justify-content: flex-start;
+	}
+
+	.sonyra-color-controller__tool-card-footer {
+		grid-template-columns: 1fr;
+	}
+
+	.sonyra-color-controller__tool-card-footer-spacer {
+		display: none;
+	}
+
+	.sonyra-color-controller__landing .sonyra-manager-meta-chip-group,
+	.sonyra-color-controller__landing [data-color-open-library] {
+		grid-column: auto;
+		justify-self: start;
+	}
+
+	.sonyra-color-controller__pattern-type-chooser {
+		grid-template-columns: 1fr;
+	}
+
+	.sonyra-color-controller__modal-panel-pattern {
+		height: min(100vh - 28px, 820px);
+		width: min(100vw - 28px, 960px);
+	}
+
+	.sonyra-color-controller__pattern-editor {
+		grid-template-columns: 1fr;
+		grid-template-rows: auto minmax(0, 1fr);
+	}
+
+	.sonyra-color-controller__pattern-result-panel {
+		border-bottom: 1px solid rgba(226, 232, 240, 0.82);
+		border-right: 0;
+		padding: 16px 16px 12px;
+		position: sticky;
+		top: 0;
+		z-index: 1;
+	}
+
+	.sonyra-color-controller__pattern-result-card {
+		border-radius: 24px;
+		padding: 16px;
+	}
+
+	.sonyra-color-controller__pattern-result-top {
+		grid-template-columns: 1fr;
+	}
+
+	.sonyra-color-controller__pattern-result-actions {
+		justify-content: flex-start;
+	}
+
+	.sonyra-color-controller__pattern-controls-scroll {
+		padding: 14px 16px 100px;
+	}
+}
+
+@media (max-width: 720px) {
+	.sonyra-color-controller__tool-card {
+		padding: 18px;
+	}
+
+	.sonyra-color-controller__grid-colors,
+	.sonyra-color-controller__grid-gradients,
+	.sonyra-color-controller__grid-patterns,
+	.sonyra-color-controller__media-library {
+		grid-template-columns: 1fr;
+	}
+
+	.sonyra-color-controller__pattern-gallery-grid,
+	.sonyra-color-controller__pattern-generator-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.sonyra-color-controller__pattern-range-row {
+		grid-template-columns: 1fr;
+	}
+
+	.sonyra-color-controller__context {
+		align-items: flex-start;
+	}
+
+	.sonyra-color-controller__entity-row {
+		grid-template-columns: auto minmax(0, 1fr);
+	}
+
+	.sonyra-color-controller__entity-actions {
+		grid-column: 1 / -1;
+		justify-content: flex-start;
+	}
+
+	.sonyra-color-controller__entity-preview-gradient,
+	.sonyra-color-controller__entity-preview-pattern {
+		height: 68px;
+		width: 108px;
+	}
+
+	.sonyra-color-controller__compact-slider {
+		grid-template-columns: minmax(0, 1fr) auto;
+	}
+}
