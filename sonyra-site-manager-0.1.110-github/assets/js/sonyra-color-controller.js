@@ -688,33 +688,94 @@
 	}
 
 	function setApprovedGraphicPatternPreviewBackground(previewBox) {
-	  var draft = getApprovedGraphicPatternDraft();
+  var draft = getApprovedGraphicPatternDraft();
 
-	  if (!previewBox) {
-	    return;
-	  }
+  if (!previewBox) {
+    return;
+  }
 
-	  var preview = previewBox.querySelector('.sonyra-approved-graphic-pattern-live-preview');
+  var preview = previewBox.querySelector('.sonyra-approved-graphic-pattern-live-preview');
 
-	  if (!preview) {
-	    return;
-	  }
+  if (!preview) {
+    return;
+  }
 
-	  var colorOne = normalizeApprovedGraphicPatternHex(draft.color_one || '#9A76F8') || '#9A76F8';
-	  var colorTwo = normalizeApprovedGraphicPatternHex(draft.color_two || '#FF93C8') || '#FF93C8';
-	  var size = Number(draft.dot_size || 12);
-	  var spacing = Number(draft.dot_spacing || 28);
-	  var opacity = Number(draft.opacity || 86) / 100;
+  var type = String(draft.pattern_type || draft.approved_pattern_type || 'dots');
+  var colorOne = normalizeApprovedGraphicPatternHex(draft.color_one || '#9A76F8') || '#9A76F8';
+  var colorTwo = normalizeApprovedGraphicPatternHex(draft.color_two || '#FF93C8') || '#FF93C8';
+  var size = Math.max(2, getApprovedGraphicPatternNumber('dot_size', 12));
+  var spacing = Math.max(8, getApprovedGraphicPatternNumber('spacing', 28));
+  var layerCount = Math.max(1, getApprovedGraphicPatternNumber('layer_count', 2));
+  var layerOffset = Math.max(0, getApprovedGraphicPatternNumber('layer_offset', 14));
+  var opacity = Math.max(0, Math.min(1, getApprovedGraphicPatternNumber('opacity', 86) / 100));
+  var randomOffset = draft.random_offset === true;
+  var edgeStyle = String(draft.edge_style || 'soft');
+  var softness = edgeStyle === 'sharp' ? 0 : Math.max(1, Math.round(size / 4));
+  var radius = Math.max(2, Math.round(size / 2));
+  var fade = radius + softness;
+  var secondLayerX = Math.round(spacing + layerOffset);
+  var secondLayerY = Math.round(spacing / 2 + layerOffset);
+  var layerThreeX = Math.round(spacing * 1.55 + layerOffset);
+  var layerThreeY = Math.round(spacing * 1.2 + layerOffset);
 
-	  preview.style.opacity = String(Math.max(0, Math.min(1, opacity)));
-	  preview.style.background =
-	    'radial-gradient(circle at ' + spacing + 'px ' + spacing + 'px, ' + colorOne + ' 0 ' + Math.max(2, size / 2) + 'px, transparent ' + Math.max(3, size / 2 + 1) + 'px),' +
-	    'radial-gradient(circle at ' + Math.round(spacing * 1.55) + 'px ' + Math.round(spacing * 1.2) + 'px, ' + colorTwo + ' 0 ' + Math.max(2, size / 2) + 'px, transparent ' + Math.max(3, size / 2 + 1) + 'px),' +
-	    '#ffffff';
-	  preview.style.backgroundSize = spacing * 2 + 'px ' + spacing * 2 + 'px';
-	}
+  preview.style.opacity = String(opacity);
+  preview.style.backgroundPosition = randomOffset ? layerOffset + 'px ' + Math.round(layerOffset / 2) + 'px' : '0 0';
 
-	function createApprovedGraphicPatternChevron() {
+  if (type === 'grid') {
+    preview.style.background =
+      'linear-gradient(' + colorOne + ' 1px, transparent 1px),' +
+      'linear-gradient(90deg, ' + colorTwo + ' 1px, transparent 1px),' +
+      '#ffffff';
+    preview.style.backgroundSize = spacing + 'px ' + spacing + 'px';
+    return;
+  }
+
+  if (type === 'waves') {
+    preview.style.background =
+      'radial-gradient(ellipse at 50% 0%, transparent ' + Math.round(spacing / 2) + 'px, ' + colorOne + ' ' + Math.round(spacing / 2 + 1) + 'px, transparent ' + Math.round(spacing / 2 + 3) + 'px),' +
+      'radial-gradient(ellipse at 50% 100%, transparent ' + Math.round(spacing / 2) + 'px, ' + colorTwo + ' ' + Math.round(spacing / 2 + 1) + 'px, transparent ' + Math.round(spacing / 2 + 3) + 'px),' +
+      '#ffffff';
+    preview.style.backgroundSize = spacing * 2 + 'px ' + spacing + 'px';
+    return;
+  }
+
+  if (type === 'lines') {
+    preview.style.background =
+      'repeating-linear-gradient(135deg, ' + colorOne + ' 0 2px, transparent 2px ' + Math.max(8, spacing) + 'px),' +
+      'repeating-linear-gradient(135deg, transparent 0 ' + Math.max(4, Math.round(spacing / 2)) + 'px, ' + colorTwo + ' ' + Math.max(4, Math.round(spacing / 2)) + 'px ' + Math.max(6, Math.round(spacing / 2 + 2)) + 'px, transparent ' + Math.max(6, Math.round(spacing / 2 + 2)) + 'px ' + Math.max(12, spacing * 2) + 'px),' +
+      '#ffffff';
+    preview.style.backgroundSize = spacing * 2 + 'px ' + spacing * 2 + 'px';
+    return;
+  }
+
+  if (type === 'paint_strokes') {
+    preview.style.background =
+      'radial-gradient(ellipse at 25% 40%, ' + colorOne + ' 0 ' + Math.round(size * 1.15) + 'px, transparent ' + Math.round(size * 1.25) + 'px),' +
+      'radial-gradient(ellipse at 64% 58%, ' + colorTwo + ' 0 ' + Math.round(size * 1.35) + 'px, transparent ' + Math.round(size * 1.5) + 'px),' +
+      'radial-gradient(ellipse at 82% 28%, ' + colorOne + ' 0 ' + Math.round(size * .75) + 'px, transparent ' + Math.round(size * .9) + 'px),' +
+      '#ffffff';
+    preview.style.backgroundSize = spacing * 2 + 'px ' + spacing * 2 + 'px';
+    return;
+  }
+
+  if (type === 'geometric_mosaic') {
+    preview.style.background =
+      'linear-gradient(45deg, transparent 42%, ' + colorOne + ' 43% 57%, transparent 58%),' +
+      'radial-gradient(circle at 70% 30%, ' + colorTwo + ' 0 ' + radius + 'px, transparent ' + fade + 'px),' +
+      '#ffffff';
+    preview.style.backgroundSize = spacing * 2 + 'px ' + spacing * 2 + 'px';
+    return;
+  }
+
+  preview.style.background =
+    'radial-gradient(circle at ' + spacing + 'px ' + spacing + 'px, ' + colorOne + ' 0 ' + radius + 'px, transparent ' + fade + 'px),' +
+    (layerCount >= 2 ? 'radial-gradient(circle at ' + secondLayerX + 'px ' + secondLayerY + 'px, ' + colorTwo + ' 0 ' + radius + 'px, transparent ' + fade + 'px),' : '') +
+    (layerCount >= 3 ? 'radial-gradient(circle at ' + layerThreeX + 'px ' + layerThreeY + 'px, ' + colorOne + ' 0 ' + radius + 'px, transparent ' + fade + 'px),' : '') +
+    '#ffffff';
+  preview.style.backgroundSize = spacing * 2 + 'px ' + spacing * 2 + 'px';
+}
+
+function createApprovedGraphicPatternChevron() {
 	  var span = createApprovedGraphicPatternNode('span', 'sonyra-approved-graphic-pattern-chevron');
 	  span.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 
@@ -933,6 +994,7 @@ function createApprovedGraphicPatternTypeButton(typeKey, titleKey, hintKey, badg
 
     if (state.modal) {
       state.modal.patternType = typeKey;
+      state.modal.groupOpen = createPatternGroupState('graphic', typeKey);
     }
 
     if (badgeNode) {
@@ -1006,12 +1068,12 @@ function renderApprovedGraphicPatternEditor() {
     setApprovedGraphicPatternDraftValue('dot_size', 12);
   }
 
-  if (typeof draft.dot_spacing === 'undefined') {
-    setApprovedGraphicPatternDraftValue('dot_spacing', 28);
+  if (typeof draft.spacing === 'undefined') {
+    setApprovedGraphicPatternDraftValue('spacing', 28);
   }
 
-  if (typeof draft.layers_count === 'undefined') {
-    setApprovedGraphicPatternDraftValue('layers_count', 2);
+  if (typeof draft.layer_count === 'undefined') {
+    setApprovedGraphicPatternDraftValue('layer_count', 2);
   }
 
   if (typeof draft.layer_offset === 'undefined') {
@@ -1026,8 +1088,8 @@ function renderApprovedGraphicPatternEditor() {
     setApprovedGraphicPatternDraftValue('random_offset', false);
   }
 
-  if (!draft.edge_mode) {
-    setApprovedGraphicPatternDraftValue('edge_mode', 'soft');
+  if (!draft.edge_style) {
+    setApprovedGraphicPatternDraftValue('edge_style', 'soft');
   }
 
   nameInput.className = 'sonyra-approved-graphic-pattern-name';
@@ -1054,8 +1116,8 @@ function renderApprovedGraphicPatternEditor() {
     ['grid', 'manager.design.colors.pattern_type_grid', 'manager.design.colors.pattern_type_grid_hint'],
     ['waves', 'manager.design.colors.pattern_type_waves', 'manager.design.colors.pattern_type_waves_hint'],
     ['lines', 'manager.design.colors.pattern_type_lines', 'manager.design.colors.pattern_type_lines_hint'],
-    ['paint', 'manager.design.colors.pattern_type_paint', 'manager.design.colors.pattern_type_paint_hint'],
-    ['shapes', 'manager.design.colors.pattern_type_shapes', 'manager.design.colors.pattern_type_shapes_hint']
+    ['paint_strokes', 'manager.design.colors.pattern_type_paint', 'manager.design.colors.pattern_type_paint_hint'],
+    ['geometric_mosaic', 'manager.design.colors.pattern_type_shapes', 'manager.design.colors.pattern_type_shapes_hint']
   ].forEach(function (item) {
     types.appendChild(createApprovedGraphicPatternTypeButton(item[0], item[1], item[2], typeBadge, previewBox));
   });
@@ -1063,7 +1125,7 @@ function renderApprovedGraphicPatternEditor() {
   dotSettings.appendChild(createApprovedGraphicPatternRange('manager.design.colors.pattern_dot_size', 4, 40, draft.dot_size || 12, 'px', 'dot_size', function () {
     setApprovedGraphicPatternPreviewBackground(previewBox);
   }));
-  dotSettings.appendChild(createApprovedGraphicPatternRange('manager.design.colors.pattern_dot_spacing', 8, 80, draft.dot_spacing || 28, 'px', 'dot_spacing', function () {
+  dotSettings.appendChild(createApprovedGraphicPatternRange('manager.design.colors.pattern_dot_spacing', 8, 80, draft.spacing || 28, 'px', 'spacing', function () {
     setApprovedGraphicPatternPreviewBackground(previewBox);
   }));
 
@@ -1074,7 +1136,7 @@ function renderApprovedGraphicPatternEditor() {
     setApprovedGraphicPatternPreviewBackground(previewBox);
   }));
 
-  layers.appendChild(createApprovedGraphicPatternRange('manager.design.colors.pattern_layers_count', 1, 5, draft.layers_count || 2, '', 'layers_count', function () {
+  layers.appendChild(createApprovedGraphicPatternRange('manager.design.colors.pattern_layers_count', 1, 5, draft.layer_count || 2, '', 'layer_count', function () {
     setApprovedGraphicPatternPreviewBackground(previewBox);
   }));
   layers.appendChild(createApprovedGraphicPatternRange('manager.design.colors.pattern_layer_offset', 0, 40, draft.layer_offset || 14, 'px', 'layer_offset', function () {
@@ -1108,7 +1170,7 @@ function renderApprovedGraphicPatternEditor() {
       });
 
       button.classList.add('is-active');
-      setApprovedGraphicPatternDraftValue('edge_mode', String(button.getAttribute('data-approved-edge') || 'soft'));
+      setApprovedGraphicPatternDraftValue('edge_style', String(button.getAttribute('data-approved-edge') || 'soft'));
       setApprovedGraphicPatternPreviewBackground(previewBox);
     });
   });
