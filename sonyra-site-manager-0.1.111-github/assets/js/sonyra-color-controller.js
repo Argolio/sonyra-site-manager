@@ -687,6 +687,13 @@
 	  }
 	}
 
+	function getApprovedGraphicPatternNumber(key, fallback) {
+	  var draft = getApprovedGraphicPatternDraft();
+	  var value = Number(draft[key]);
+
+	  return Number.isFinite(value) ? value : fallback;
+	}
+
 	function setApprovedGraphicPatternPreviewBackground(previewBox) {
   var draft = getApprovedGraphicPatternDraft();
 
