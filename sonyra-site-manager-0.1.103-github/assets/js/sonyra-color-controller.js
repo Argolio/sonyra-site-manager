@@ -550,7 +550,11 @@
 			return value;
 		}
 
-		throw new Error('SONYRA i18n text missing: ' + key);
+		if (window && window.console && typeof window.console.error === 'function') {
+			window.console.error('SONYRA i18n text missing:', key);
+		}
+
+		return '';
 	}
 
 	function getSonyraSourceText(key, fallback) {
@@ -564,7 +568,10 @@
 		if (typeof fallback === 'string' && fallback.trim()) {
 			return fallback.trim();
 		}
-		throw new Error('SONYRA i18n text missing: ' + key);
+		if (window && window.console && typeof window.console.error === 'function') {
+			window.console.error('SONYRA i18n text missing:', key);
+		}
+		return '';
 	}
 
 	function getColorControllerModalCopy(modal) {
