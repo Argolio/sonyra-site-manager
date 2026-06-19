@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Пульт сайта
  * Description: Базовый плагин платформы SONYRA Site Platform для управления самостоятельными страницами, брендом, модулями и кодами вставки.
- * Version: 0.1.107
+ * Version: 0.1.108
  * Author: SONYRA STUDIO
  * Text Domain: sonyra-site-manager
  * Requires at least: 6.0
@@ -13,7 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'SONYRA_SITE_MANAGER_VERSION', '0.1.107' );
+define( 'SONYRA_SITE_MANAGER_VERSION', '0.1.108' );
 define( 'SONYRA_SITE_MANAGER_DB_VERSION', '0.1.1' );
 define( 'SONYRA_SITE_MANAGER_SEED_VERSION', '0.1.0' );
 define( 'SONYRA_SITE_MANAGER_FILE', __FILE__ );

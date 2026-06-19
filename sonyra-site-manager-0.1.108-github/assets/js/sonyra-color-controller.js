@@ -673,6 +673,47 @@
 	  return t(key);
 	}
 
+	function getApprovedGraphicPatternDraft() {
+	  return state.modal && state.modal.draft ? state.modal.draft : {};
+	}
+
+	function setApprovedGraphicPatternDraftValue(key, value) {
+	  var draft = getApprovedGraphicPatternDraft();
+
+	  draft[key] = value;
+
+	  if (state.modal) {
+	    state.modal.draft = draft;
+	  }
+	}
+
+	function setApprovedGraphicPatternPreviewBackground(previewBox) {
+	  var draft = getApprovedGraphicPatternDraft();
+
+	  if (!previewBox) {
+	    return;
+	  }
+
+	  var preview = previewBox.querySelector('.sonyra-approved-graphic-pattern-live-preview');
+
+	  if (!preview) {
+	    return;
+	  }
+
+	  var colorOne = normalizeApprovedGraphicPatternHex(draft.color_one || '#9A76F8') || '#9A76F8';
+	  var colorTwo = normalizeApprovedGraphicPatternHex(draft.color_two || '#FF93C8') || '#FF93C8';
+	  var size = Number(draft.dot_size || 12);
+	  var spacing = Number(draft.dot_spacing || 28);
+	  var opacity = Number(draft.opacity || 86) / 100;
+
+	  preview.style.opacity = String(Math.max(0, Math.min(1, opacity)));
+	  preview.style.background =
+	    'radial-gradient(circle at ' + spacing + 'px ' + spacing + 'px, ' + colorOne + ' 0 ' + Math.max(2, size / 2) + 'px, transparent ' + Math.max(3, size / 2 + 1) + 'px),' +
+	    'radial-gradient(circle at ' + Math.round(spacing * 1.55) + 'px ' + Math.round(spacing * 1.2) + 'px, ' + colorTwo + ' 0 ' + Math.max(2, size / 2) + 'px, transparent ' + Math.max(3, size / 2 + 1) + 'px),' +
+	    '#ffffff';
+	  preview.style.backgroundSize = spacing * 2 + 'px ' + spacing * 2 + 'px';
+	}
+
 	function createApprovedGraphicPatternChevron() {
 	  var span = createApprovedGraphicPatternNode('span', 'sonyra-approved-graphic-pattern-chevron');
 	  span.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 10l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -685,6 +726,10 @@
 
 	  if (open) {
 	    details.open = true;
+	    details.setAttribute('open', 'open');
+	  } else {
+	    details.open = false;
+	    details.removeAttribute('open');
 	  }
 
 	  var summary = createApprovedGraphicPatternNode('summary');
@@ -719,7 +764,9 @@
 	  valueNode.textContent = String(Math.round(value)) + String(range.dataset.suffix || '');
 	}
 
-	function createApprovedGraphicPatternRange(labelKey, min, max, value, suffix) {
+	function createApprovedGraphicPatternRange(labelKey, min, max, value, suffix, draftKey, onUpdate) {
+	  var draft = getApprovedGraphicPatternDraft();
+	  var currentValue = draftKey && typeof draft[draftKey] !== 'undefined' ? draft[draftKey] : value;
 	  var wrap = createApprovedGraphicPatternNode('div', 'sonyra-approved-graphic-pattern-field');
 	  var head = createApprovedGraphicPatternNode('div', 'sonyra-approved-graphic-pattern-field-head');
 	  var title = createApprovedGraphicPatternNode('span', 'sonyra-approved-graphic-pattern-field-title', getApprovedGraphicPatternText(labelKey));
@@ -730,7 +777,7 @@
 	  range.className = 'sonyra-approved-graphic-pattern-range';
 	  range.min = String(min);
 	  range.max = String(max);
-	  range.value = String(value);
+	  range.value = String(currentValue);
 	  range.dataset.suffix = String(suffix || '');
 
 	  head.appendChild(title);
@@ -739,8 +786,17 @@
 	  wrap.appendChild(range);
 
 	  updateApprovedGraphicPatternRange(range, valueNode);
+
 	  range.addEventListener('input', function () {
 	    updateApprovedGraphicPatternRange(range, valueNode);
+
+	    if (draftKey) {
+	      setApprovedGraphicPatternDraftValue(draftKey, Number(range.value));
+	    }
+
+	    if (typeof onUpdate === 'function') {
+	      onUpdate();
+	    }
 	  });
 
 	  return wrap;
@@ -758,8 +814,9 @@
 	  return /^#[0-9A-F]{6}$/.test(hex) ? hex : '';
 	}
 
-	function createApprovedGraphicPatternColorControl(index, initialColor) {
-	  var color = normalizeApprovedGraphicPatternHex(initialColor) || '#9A76F8';
+	function createApprovedGraphicPatternColorControl(index, initialColor, draftKey, onUpdate) {
+	  var draft = getApprovedGraphicPatternDraft();
+	  var color = normalizeApprovedGraphicPatternHex(draftKey && draft[draftKey] ? draft[draftKey] : initialColor) || '#9A76F8';
 	  var tile = createApprovedGraphicPatternNode('div', 'sonyra-approved-graphic-pattern-color');
 	  var button = document.createElement('button');
 	  var picker = document.createElement('input');
@@ -770,6 +827,10 @@
 	    getApprovedGraphicPatternText('manager.design.colors.pattern_color_point') + ' ' + String(index)
 	  );
 	  var input = document.createElement('input');
+
+	  if (draftKey) {
+	    setApprovedGraphicPatternDraftValue(draftKey, color);
+	  }
 
 	  button.type = 'button';
 	  button.className = 'sonyra-approved-graphic-pattern-color-button';
@@ -792,6 +853,14 @@
 	    button.style.setProperty('--sonyra-color', normalized);
 	    picker.value = normalized;
 	    input.value = normalized;
+
+	    if (draftKey) {
+	      setApprovedGraphicPatternDraftValue(draftKey, normalized);
+	    }
+
+	    if (typeof onUpdate === 'function') {
+	      onUpdate();
+	    }
 	  }
 
 	  button.addEventListener('click', function () {
@@ -808,6 +877,14 @@
 	    if (normalized) {
 	      button.style.setProperty('--sonyra-color', normalized);
 	      picker.value = normalized;
+
+	      if (draftKey) {
+	        setApprovedGraphicPatternDraftValue(draftKey, normalized);
+	      }
+
+	      if (typeof onUpdate === 'function') {
+	        onUpdate();
+	      }
 	    }
 	  });
 
@@ -824,16 +901,18 @@
 	  return tile;
 	}
 
-	function createApprovedGraphicPatternTypeButton(typeKey, titleKey, hintKey, badgeNode) {
+	function createApprovedGraphicPatternTypeButton(typeKey, titleKey, hintKey, badgeNode, previewBox) {
+	  var draft = getApprovedGraphicPatternDraft();
 	  var button = document.createElement('button');
 	  var title = createApprovedGraphicPatternNode('strong', '', getApprovedGraphicPatternText(titleKey));
 	  var hint = createApprovedGraphicPatternNode('span', '', getApprovedGraphicPatternText(hintKey));
+	  var activeType = draft.approved_pattern_type || 'dots';
 
 	  button.type = 'button';
 	  button.className = 'sonyra-approved-graphic-pattern-type';
 	  button.dataset.approvedPatternType = typeKey;
 
-	  if (typeKey === 'dots') {
+	  if (typeKey === activeType) {
 	    button.classList.add('is-active');
 	  }
 
@@ -849,20 +928,24 @@
 
 	    button.classList.add('is-active');
 
+	    setApprovedGraphicPatternDraftValue('approved_pattern_type', typeKey);
+
 	    if (badgeNode) {
 	      badgeNode.textContent = title.textContent;
 	    }
+
+	    setApprovedGraphicPatternPreviewBackground(previewBox);
 	  });
 
 	  return button;
 	}
 
 	function renderApprovedGraphicPatternEditor() {
-	  var draft = state.modal && state.modal.draft ? state.modal.draft : {};
+	  var draft = getApprovedGraphicPatternDraft();
 	  var editor = createApprovedGraphicPatternNode('div', 'sonyra-approved-graphic-pattern-editor');
 	  var top = createApprovedGraphicPatternNode('div', 'sonyra-approved-graphic-pattern-top');
 	  var previewBox = createApprovedGraphicPatternNode('div', 'sonyra-approved-graphic-pattern-preview-box');
-	  var preview = renderPatternPreview(draft, true, getPatternDefinition(draft.pattern_type || getDefaultPatternType()));
+	  var preview = createApprovedGraphicPatternNode('div', 'sonyra-color-controller__pattern-preview sonyra-approved-graphic-pattern-live-preview');
 	  var previewBadge = createApprovedGraphicPatternNode(
 	    'span',
 	    'sonyra-approved-graphic-pattern-badge sonyra-approved-graphic-pattern-preview-badge',
@@ -906,11 +989,35 @@
 
 	  ensureApprovedGraphicPatternStyle();
 
+	  if (!draft.approved_pattern_type) {
+	    setApprovedGraphicPatternDraftValue('approved_pattern_type', 'dots');
+	  }
+
+	  if (typeof draft.dot_size === 'undefined') {
+	    setApprovedGraphicPatternDraftValue('dot_size', 12);
+	  }
+
+	  if (typeof draft.dot_spacing === 'undefined') {
+	    setApprovedGraphicPatternDraftValue('dot_spacing', 28);
+	  }
+
+	  if (typeof draft.layers_count === 'undefined') {
+	    setApprovedGraphicPatternDraftValue('layers_count', 2);
+	  }
+
+	  if (typeof draft.layer_offset === 'undefined') {
+	    setApprovedGraphicPatternDraftValue('layer_offset', 14);
+	  }
+
+	  if (typeof draft.opacity === 'undefined') {
+	    setApprovedGraphicPatternDraftValue('opacity', 86);
+	  }
+
 	  nameInput.className = 'sonyra-approved-graphic-pattern-name';
 	  nameInput.value = String(draft.name || '');
 	  nameInput.placeholder = getApprovedGraphicPatternText('manager.design.colors.pattern_name_placeholder');
 	  nameInput.addEventListener('input', function () {
-	    draft.name = nameInput.value;
+	    setApprovedGraphicPatternDraftValue('name', nameInput.value);
 	  });
 
 	  previewBox.appendChild(preview);
@@ -933,22 +1040,36 @@
 	    ['paint', 'manager.design.colors.pattern_type_paint', 'manager.design.colors.pattern_type_paint_hint'],
 	    ['shapes', 'manager.design.colors.pattern_type_shapes', 'manager.design.colors.pattern_type_shapes_hint']
 	  ].forEach(function (item) {
-	    types.appendChild(createApprovedGraphicPatternTypeButton(item[0], item[1], item[2], typeBadge));
+	    types.appendChild(createApprovedGraphicPatternTypeButton(item[0], item[1], item[2], typeBadge, previewBox));
 	  });
 
-	  dotSettings.appendChild(createApprovedGraphicPatternRange('manager.design.colors.pattern_dot_size', 4, 40, 12, 'px'));
-	  dotSettings.appendChild(createApprovedGraphicPatternRange('manager.design.colors.pattern_dot_spacing', 8, 80, 28, 'px'));
+	  dotSettings.appendChild(createApprovedGraphicPatternRange('manager.design.colors.pattern_dot_size', 4, 40, draft.dot_size || 12, 'px', 'dot_size', function () {
+	    setApprovedGraphicPatternPreviewBackground(previewBox);
+	  }));
+	  dotSettings.appendChild(createApprovedGraphicPatternRange('manager.design.colors.pattern_dot_spacing', 8, 80, draft.dot_spacing || 28, 'px', 'dot_spacing', function () {
+	    setApprovedGraphicPatternPreviewBackground(previewBox);
+	  }));
 
-	  colors.appendChild(createApprovedGraphicPatternColorControl(1, '#9A76F8'));
-	  colors.appendChild(createApprovedGraphicPatternColorControl(2, '#FF93C8'));
+	  colors.appendChild(createApprovedGraphicPatternColorControl(1, draft.color_one || '#9A76F8', 'color_one', function () {
+	    setApprovedGraphicPatternPreviewBackground(previewBox);
+	  }));
+	  colors.appendChild(createApprovedGraphicPatternColorControl(2, draft.color_two || '#FF93C8', 'color_two', function () {
+	    setApprovedGraphicPatternPreviewBackground(previewBox);
+	  }));
 
-	  layers.appendChild(createApprovedGraphicPatternRange('manager.design.colors.pattern_layers_count', 1, 5, 2, ''));
-	  layers.appendChild(createApprovedGraphicPatternRange('manager.design.colors.pattern_layer_offset', 0, 40, 14, 'px'));
+	  layers.appendChild(createApprovedGraphicPatternRange('manager.design.colors.pattern_layers_count', 1, 5, draft.layers_count || 2, '', 'layers_count', function () {
+	    setApprovedGraphicPatternPreviewBackground(previewBox);
+	  }));
+	  layers.appendChild(createApprovedGraphicPatternRange('manager.design.colors.pattern_layer_offset', 0, 40, draft.layer_offset || 14, 'px', 'layer_offset', function () {
+	    setApprovedGraphicPatternPreviewBackground(previewBox);
+	  }));
 
 	  colorsWrap.appendChild(colors);
 	  colorsWrap.appendChild(layers);
 
-	  effects.appendChild(createApprovedGraphicPatternRange('manager.design.colors.pattern_opacity', 0, 100, 86, '%'));
+	  effects.appendChild(createApprovedGraphicPatternRange('manager.design.colors.pattern_opacity', 0, 100, draft.opacity || 86, '%', 'opacity', function () {
+	    setApprovedGraphicPatternPreviewBackground(previewBox);
+	  }));
 
 	  random.appendChild(randomLabel);
 	  random.appendChild(randomSwitch);
@@ -969,18 +1090,36 @@
 	  editor.appendChild(top);
 	  editor.appendChild(scroll);
 
+	  setApprovedGraphicPatternPreviewBackground(previewBox);
+
 	  return editor;
 	}
 
 	function moveApprovedGraphicPatternBackButton(modalFooter) {
-	  var existingBack = document.querySelector('.sonyra-color-controller__pattern-back-button');
+	  var existingBack = document.querySelector('.sonyra-approved-graphic-pattern-footer-back');
 
-	  if (!modalFooter || !existingBack) {
+	  if (!modalFooter) {
 	    return;
 	  }
 
+	  if (!existingBack) {
+	    existingBack = document.createElement('button');
+	    existingBack.type = 'button';
+	    existingBack.className = 'sonyra-approved-graphic-pattern-footer-back sonyra-color-controller__pattern-back-button';
+	  }
+
 	  existingBack.textContent = getApprovedGraphicPatternText('manager.design.colors.pattern_back_to_type');
-	  existingBack.classList.add('sonyra-approved-graphic-pattern-footer-back');
+
+	  existingBack.addEventListener('click', function () {
+	    if (!state.modal) {
+	      return;
+	    }
+
+	    state.modal.patternSourceSelected = false;
+	    state.modal.patternType = '';
+	    rerenderActiveModal();
+	  });
+
 	  modalFooter.insertBefore(existingBack, modalFooter.firstChild);
 	}
 
