@@ -2300,7 +2300,7 @@
 			state.modal.draft.pattern_type
 		);
 
-		renderModal();
+		rerenderActiveModal();
 	}
 
 	function buildPatternGroupBody(modal, definition, group) {
@@ -2521,17 +2521,50 @@
 		return block;
 	}
 
-	function buildPatternGraphicEditor(modal) {
-		var wrap = createNode('div', 'sonyra-color-controller__pattern-simple-editor');
-		var back = createNode('button', 'sonyra-color-controller__pattern-simple-back');
-		back.type = 'button';
-		back.setAttribute('data-pattern-back-source', 'true');
-		back.textContent = t('manager.design.colors.pattern_back_to_source');
-		wrap.appendChild(back);
-		wrap.appendChild(buildPatternNameField(modal));
-		wrap.appendChild(buildPatternGraphicTypeSelect(modal));
-		wrap.appendChild(buildPatternPreviewBlock(modal));
-		wrap.appendChild(buildPatternSimpleSettings(modal));
+	function getClientGraphicPatternDefinitions(currentType) {
+		var curatedKeys = ['dots', 'grid', 'waves', 'lines', 'decorative_elements'];
+		var seen = {};
+		var definitions = [];
+
+		curatedKeys.forEach(function (key) {
+			var definition = getPatternDefinition(key);
+			if (!definition || definition.editorKind === 'image' || definition.key === 'image_pattern') {
+				return;
+			}
+			seen[definition.key] = true;
+			definitions.push(definition);
+		});
+
+		if (currentType && !seen[currentType]) {
+			var currentDefinition = getPatternDefinition(currentType);
+			if (currentDefinition && currentDefinition.editorKind !== 'image' && currentDefinition.key !== 'image_pattern') {
+				definitions.push(currentDefinition);
+			}
+		}
+
+		return definitions;
+	}
+
+	function buildPatternEditorNameField(modal) {
+		var draft = modal && modal.draft ? modal.draft : {};
+		var wrap = createNode('div', 'sonyra-color-controller__pattern-name-field');
+		var label = createNode('label', 'sonyra-color-controller__pattern-name-label', t('manager.design.colors.pattern_name_label'));
+		var input = buildTextInput('name', draft.name || '');
+
+		input.className = 'sonyra-color-controller__pattern-name-input';
+		input.placeholder = t('manager.design.colors.pattern_name_placeholder');
+		label.setAttribute('data-color-pattern-name-field', 'true');
+		wrap.setAttribute('data-color-pattern-name-field', 'true');
+		label.appendChild(input);
+		wrap.appendChild(label);
+
+		if (modal.errors && modal.errors.name) {
+			wrap.appendChild(createNode('small', 'sonyra-color-controller__field-error', modal.errors.name));
+		}
+		if (getModalFieldHelperText(modal, 'name', '')) {
+			wrap.appendChild(createNode('small', 'sonyra-color-controller__field-helper', getModalFieldHelperText(modal, 'name', '')));
+		}
+
 		return wrap;
 	}
 
@@ -2550,15 +2583,106 @@
 	}
 
 	function buildPatternTypePicker(modal) {
-		return buildPatternGraphicTypeSelect(modal);
+		var draft = modal && modal.draft ? modal.draft : {};
+		var currentType = draft.pattern_type || getDefaultPatternType();
+		var wrap = createNode('section', 'sonyra-color-controller__pattern-type-picker');
+		var title = createNode('strong', 'sonyra-color-controller__pattern-type-picker-title', t('manager.design.colors.pattern_graphic_type_label'));
+		var grid = createNode('div', 'sonyra-color-controller__pattern-type-picker-grid');
+
+		getClientGraphicPatternDefinitions(currentType).forEach(function (definition) {
+			var button = createNode('button', 'sonyra-color-controller__pattern-tile' + (definition.key === currentType ? ' is-active' : ''));
+			var preview = renderPatternPreview({
+				pattern_type: definition.key,
+				colors: definition.defaultColors,
+				settings: definition.defaultSettings,
+				media: {}
+			}, false, definition);
+			var copy = createNode('div', 'sonyra-color-controller__pattern-tile-copy');
+
+			button.type = 'button';
+			button.setAttribute('data-pattern-type', definition.key);
+			button.setAttribute('aria-pressed', definition.key === currentType ? 'true' : 'false');
+			button.appendChild(preview);
+			copy.appendChild(createNode('strong', 'sonyra-color-controller__pattern-tile-title', definition.label || definition.key));
+			copy.appendChild(createNode('span', 'sonyra-color-controller__pattern-tile-description', definition.description || ''));
+			button.appendChild(copy);
+			grid.appendChild(button);
+		});
+
+		wrap.appendChild(title);
+		wrap.appendChild(grid);
+		return wrap;
 	}
 
 	function buildPatternResultCard(modal) {
-		return buildPatternPreviewBlock(modal);
+		var draft = modal && modal.draft ? modal.draft : {};
+		var definition = getPatternDefinition(draft.pattern_type) || getPatternDefinition(getDefaultPatternType());
+		var card = createNode('section', 'sonyra-color-controller__pattern-result-card');
+		var meta = createNode('div', 'sonyra-color-controller__pattern-result-meta');
+		var top = createNode('div', 'sonyra-color-controller__pattern-result-top');
+		var copy = createNode('div', 'sonyra-color-controller__pattern-result-copy');
+		var previewWrap = createNode('div', 'sonyra-color-controller__pattern-result-preview');
+		var preview = buildPatternPreviewFromDraft(draft);
+
+		preview.setAttribute('data-color-pattern-preview-live', 'true');
+		copy.appendChild(createNode('strong', 'sonyra-color-controller__pattern-result-title', t('manager.design.colors.pattern_preview_label')));
+		copy.appendChild(createNode('p', 'sonyra-color-controller__pattern-controls-hint', t('manager.design.colors.pattern_live_preview_hint')));
+		top.appendChild(copy);
+		top.appendChild(createNode('span', 'sonyra-manager-meta-chip sonyra-color-controller__pattern-result-chip', definition && definition.label ? definition.label : ''));
+		top.lastChild.setAttribute('data-color-pattern-result-type', 'true');
+		previewWrap.appendChild(preview);
+		meta.appendChild(top);
+		meta.appendChild(previewWrap);
+		card.appendChild(meta);
+		return card;
 	}
 
 	function buildPatternControlsPanel(modal) {
-		return buildPatternSimpleSettings(modal);
+		var draft = modal && modal.draft ? modal.draft : {};
+		var definition = getPatternDefinition(draft.pattern_type) || getPatternDefinition(getDefaultPatternType());
+		var schema = getPatternEditorSchema(draft.pattern_type || getDefaultPatternType(), definition);
+		var panel = createNode('section', 'sonyra-color-controller__pattern-controls-panel');
+		var head = createNode('div', 'sonyra-color-controller__pattern-controls-head');
+		var back = createButton('sonyra-manager-pages-secondary sonyra-color-controller__pattern-back-button', t('manager.design.colors.pattern_back_to_choice'));
+		var scroll = createNode('div', 'sonyra-color-controller__pattern-controls-scroll');
+
+		back.setAttribute('data-pattern-back-source', 'true');
+		head.appendChild(back);
+		panel.appendChild(head);
+		scroll.setAttribute('data-color-pattern-settings-scroll', 'true');
+		scroll.appendChild(buildPatternEditorNameField(modal));
+		scroll.appendChild(buildPatternTypePicker(modal));
+
+		(schema.groups || []).forEach(function (group) {
+			var body = buildPatternGroupBody(modal, definition, group);
+			if (!body) {
+				return;
+			}
+
+			scroll.appendChild(buildPatternAccordionGroup({
+				key: group.key,
+				kind: 'group',
+				title: getControlGroupLabel(group.titleKey),
+				summary: '',
+				defaultOpen: !!(state.modal && state.modal.groupOpen && state.modal.groupOpen[group.key] !== false),
+				body: body
+			}));
+		});
+
+		panel.appendChild(scroll);
+		return panel;
+	}
+
+	function buildPatternGraphicEditor(modal) {
+		var wrap = createNode('div', 'sonyra-color-controller__pattern-editor');
+		var left = createNode('div', 'sonyra-color-controller__pattern-left');
+		var right = createNode('div', 'sonyra-color-controller__pattern-right');
+
+		left.appendChild(buildPatternControlsPanel(modal));
+		right.appendChild(buildPatternResultCard(modal));
+		wrap.appendChild(left);
+		wrap.appendChild(right);
+		return wrap;
 	}
 
 	function buildPatternEditorLayout(modal) {
@@ -2637,24 +2761,34 @@
 			return;
 		}
 
-		if (!modalElement.querySelector('.sonyra-color-controller__pattern-simple-editor')) {
-			throw new Error('SONYRA modal DOM assertion failed: editor body is missing');
+		if (getPatternFlowStep(modal) === 'image-editor') {
+			if (!modalElement.querySelector('.sonyra-color-controller__pattern-simple-editor')) {
+				throw new Error('SONYRA modal DOM assertion failed: image editor body is missing');
+			}
+			if (!modalElement.querySelector('[data-pattern-back-source]')) {
+				throw new Error('SONYRA modal DOM assertion failed: back to source button is missing');
+			}
+			return;
 		}
 
-		if (!modalElement.querySelector('.sonyra-color-controller__pattern-simple-label') || !modalElement.querySelector('[data-pattern-name-input]')) {
-			throw new Error('SONYRA modal DOM assertion failed: pattern name label is missing');
+		if (!modalElement.querySelector('.sonyra-color-controller__pattern-editor')) {
+			throw new Error('SONYRA modal DOM assertion failed: graphic editor body is missing');
 		}
 
-		if (!modalElement.querySelector('.sonyra-color-controller__pattern-simple-preview-block')) {
-			throw new Error('SONYRA modal DOM assertion failed: preview block is missing');
+		if (!modalElement.querySelector('.sonyra-color-controller__pattern-type-picker')) {
+			throw new Error('SONYRA modal DOM assertion failed: type picker is missing');
 		}
 
-		if (!modalElement.querySelector('.sonyra-color-controller__pattern-simple-settings')) {
-			throw new Error('SONYRA modal DOM assertion failed: settings block is missing');
+		if (!modalElement.querySelector('[data-color-pattern-name-field] [data-color-modal-field=\"name\"]')) {
+			throw new Error('SONYRA modal DOM assertion failed: pattern name field is missing');
 		}
 
-		if (!modalElement.querySelector('[data-pattern-back-source]')) {
-			throw new Error('SONYRA modal DOM assertion failed: back to source button is missing');
+		if (!modalElement.querySelector('[data-color-pattern-preview-live]')) {
+			throw new Error('SONYRA modal DOM assertion failed: live preview is missing');
+		}
+
+		if (!modalElement.querySelector('.sonyra-color-controller__pattern-controls-panel')) {
+			throw new Error('SONYRA modal DOM assertion failed: controls panel is missing');
 		}
 	}
 
@@ -2728,6 +2862,35 @@
 		assertColorControllerModalDom(overlay, state.modal);
 
 		return overlay;
+	}
+
+	function rerenderActiveModal() {
+		var currentOverlay;
+		var nextOverlay;
+
+		if (!app) {
+			return;
+		}
+
+		captureModalViewState();
+		currentOverlay = root.querySelector('[data-color-modal-overlay="true"]');
+		nextOverlay = renderModal();
+
+		if (currentOverlay && nextOverlay && currentOverlay.parentNode) {
+			currentOverlay.parentNode.replaceChild(nextOverlay, currentOverlay);
+			restoreModalViewState();
+			return;
+		}
+
+		if (!currentOverlay && nextOverlay) {
+			app.appendChild(nextOverlay);
+			restoreModalViewState();
+			return;
+		}
+
+		if (currentOverlay && currentOverlay.parentNode) {
+			currentOverlay.parentNode.removeChild(currentOverlay);
+		}
 	}
 
 	function captureModalViewState() {
