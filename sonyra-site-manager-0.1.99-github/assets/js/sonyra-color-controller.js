@@ -547,6 +547,17 @@
 		return fallback;
 	}
 
+	function getSonyraSourceText(key, fallback) {
+		var value = t(key);
+		if (typeof value === 'string') {
+			value = value.trim();
+		}
+		if (value && value !== key) {
+			return value;
+		}
+		return fallback;
+	}
+
 	function getColorControllerModalCopy(modal) {
 		var type = modal && modal.entityType ? String(modal.entityType) : (modal && modal.type ? String(modal.type) : '');
 		var mode = modal && modal.mode ? String(modal.mode) : 'create';
@@ -2117,17 +2128,6 @@
 		return !!slot && isVisibleByRule(slot.visible_when, draft);
 	}
 
-	function createPatternSourceNode(tagName, className, text) {
-		var node = document.createElement(tagName);
-		if (className) {
-			node.className = className;
-		}
-		if (typeof text === 'string') {
-			node.textContent = text;
-		}
-		return node;
-	}
-
 	function shouldShowPatternSourceChoice(modal) {
 		if (!modal || modal.type !== 'pattern') {
 			return false;
@@ -2139,44 +2139,74 @@
 	}
 
 	function buildPatternSourceChoice(modal) {
-		var wrap = createPatternSourceNode('div', 'sonyra-color-controller__pattern-source-choice');
-		var head = createPatternSourceNode('div', 'sonyra-color-controller__pattern-source-choice-head');
-		var title = createPatternSourceNode('h3', 'sonyra-color-controller__pattern-source-choice-title', t('manager.design.colors.pattern_source_title'));
-		var description = createPatternSourceNode('p', 'sonyra-color-controller__pattern-source-choice-description', t('manager.design.colors.pattern_source_description'));
-		var grid = createPatternSourceNode('div', 'sonyra-color-controller__pattern-source-choice-grid');
-		var graphicCard = buildPatternSourceChoiceCard({
+		var wrap = document.createElement('div');
+		wrap.className = 'sonyra-color-controller__pattern-source-choice';
+		wrap.setAttribute('data-pattern-source-choice-screen', 'true');
+		var intro = document.createElement('div');
+		intro.className = 'sonyra-color-controller__pattern-source-choice-intro';
+		var introTitle = document.createElement('h3');
+		introTitle.className = 'sonyra-color-controller__pattern-source-choice-title';
+		introTitle.textContent = getSonyraSourceText(
+			'manager.design.colors.pattern_source_title',
+			'Какой паттерн создать'
+		);
+		var introDescription = document.createElement('p');
+		introDescription.className = 'sonyra-color-controller__pattern-source-choice-description';
+		introDescription.textContent = getSonyraSourceText(
+			'manager.design.colors.pattern_source_description',
+			'Выберите способ создания паттерна для библиотеки сайта'
+		);
+		intro.appendChild(introTitle);
+		intro.appendChild(introDescription);
+		wrap.appendChild(intro);
+		var grid = document.createElement('div');
+		grid.className = 'sonyra-color-controller__pattern-source-choice-grid';
+		grid.appendChild(buildPatternSourceChoiceCard({
 			kind: 'graphic',
-			title: t('manager.design.colors.pattern_source_graphic_title'),
-			description: t('manager.design.colors.pattern_source_graphic_description'),
-			action: t('manager.design.colors.pattern_source_choose_graphic')
-		});
-		var imageCard = buildPatternSourceChoiceCard({
+			titleKey: 'manager.design.colors.pattern_source_graphic_title',
+			titleFallback: 'Графический паттерн',
+			descriptionKey: 'manager.design.colors.pattern_source_graphic_description',
+			descriptionFallback: 'Создайте узор из точек, линий, сетки, кругов и других графических элементов',
+			actionKey: 'manager.design.colors.pattern_source_choose_graphic',
+			actionFallback: 'Выбрать графический паттерн'
+		}));
+		grid.appendChild(buildPatternSourceChoiceCard({
 			kind: 'image',
-			title: t('manager.design.colors.pattern_source_image_title'),
-			description: t('manager.design.colors.pattern_source_image_description'),
-			action: t('manager.design.colors.pattern_source_choose_image')
-		});
-
-		head.appendChild(title);
-		head.appendChild(description);
-		wrap.appendChild(head);
-		grid.appendChild(graphicCard);
-		grid.appendChild(imageCard);
+			titleKey: 'manager.design.colors.pattern_source_image_title',
+			titleFallback: 'Изображение как паттерн',
+			descriptionKey: 'manager.design.colors.pattern_source_image_description',
+			descriptionFallback: 'Используйте изображение как повторяемый фон и настройте его отображение',
+			actionKey: 'manager.design.colors.pattern_source_choose_image',
+			actionFallback: 'Выбрать изображение'
+		}));
 		wrap.appendChild(grid);
+		assertPatternSourceChoiceDom(wrap);
 		return wrap;
 	}
 
 	function buildPatternSourceChoiceCard(config) {
-		var button = createPatternSourceNode('button', 'sonyra-color-controller__pattern-source-card');
-		var icon = createPatternSourceNode('span', 'sonyra-color-controller__pattern-source-card-icon');
-		var copy = createPatternSourceNode('span', 'sonyra-color-controller__pattern-source-card-copy');
-		var title = createPatternSourceNode('strong', 'sonyra-color-controller__pattern-source-card-title', config.title);
-		var description = createPatternSourceNode('span', 'sonyra-color-controller__pattern-source-card-description', config.description);
-		var action = createPatternSourceNode('span', 'sonyra-color-controller__pattern-source-card-action', config.action);
+		var button = document.createElement('button');
 		button.type = 'button';
+		button.className = 'sonyra-color-controller__pattern-source-card';
 		button.setAttribute('data-pattern-source-choice', config.kind);
-		button.setAttribute('aria-label', config.title);
+		var titleText = getSonyraSourceText(config.titleKey, config.titleFallback);
+		var descriptionText = getSonyraSourceText(config.descriptionKey, config.descriptionFallback);
+		var actionText = getSonyraSourceText(config.actionKey, config.actionFallback);
+		button.setAttribute('aria-label', titleText);
+		var icon = document.createElement('span');
+		icon.className = 'sonyra-color-controller__pattern-source-card-icon';
 		icon.setAttribute('aria-hidden', 'true');
+		var copy = document.createElement('span');
+		copy.className = 'sonyra-color-controller__pattern-source-card-copy';
+		var title = document.createElement('strong');
+		title.className = 'sonyra-color-controller__pattern-source-card-title';
+		title.textContent = titleText;
+		var description = document.createElement('span');
+		description.className = 'sonyra-color-controller__pattern-source-card-description';
+		description.textContent = descriptionText;
+		var action = document.createElement('span');
+		action.className = 'sonyra-color-controller__pattern-source-card-action';
+		action.textContent = actionText;
 		copy.appendChild(title);
 		copy.appendChild(description);
 		copy.appendChild(action);
@@ -2186,6 +2216,37 @@
 			selectPatternSourceChoice(config.kind);
 		});
 		return button;
+	}
+
+	function assertPatternSourceChoiceDom(root) {
+		if (!root) {
+			throw new Error('SONYRA pattern source choice missing root');
+		}
+		var cards = root.querySelectorAll('[data-pattern-source-choice]');
+		var titles = root.querySelectorAll('.sonyra-color-controller__pattern-source-card-title');
+		var descriptions = root.querySelectorAll('.sonyra-color-controller__pattern-source-card-description');
+		var actions = root.querySelectorAll('.sonyra-color-controller__pattern-source-card-action');
+		if (cards.length !== 2) {
+			throw new Error('SONYRA pattern source choice must render exactly 2 cards');
+		}
+		if (titles.length !== 2 || descriptions.length !== 2 || actions.length !== 2) {
+			throw new Error('SONYRA pattern source choice visible text nodes missing');
+		}
+		Array.prototype.forEach.call(titles, function (node) {
+			if (!node.textContent || !node.textContent.trim()) {
+				throw new Error('SONYRA pattern source choice card title is empty');
+			}
+		});
+		Array.prototype.forEach.call(descriptions, function (node) {
+			if (!node.textContent || !node.textContent.trim()) {
+				throw new Error('SONYRA pattern source choice card description is empty');
+			}
+		});
+		Array.prototype.forEach.call(actions, function (node) {
+			if (!node.textContent || !node.textContent.trim()) {
+				throw new Error('SONYRA pattern source choice card action is empty');
+			}
+		});
 	}
 
 	function selectPatternSourceChoice(kind) {
