@@ -2177,6 +2177,9 @@
 		if (config.kind === 'image') {
 			icon.className += ' sonyra-color-controller__pattern-source-card-icon-image';
 		}
+		icon.innerHTML = config.kind === 'image'
+			? '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none"><rect x="4.5" y="5.5" width="15" height="13" rx="3" stroke="rgba(255,255,255,.94)" stroke-width="2"></rect><circle cx="15.6" cy="9.1" r="1.45" fill="rgba(255,255,255,.94)"></circle><path d="M6.8 16.4l4.1-4.4 3 3.1 1.8-1.9 2.7 3.2" stroke="rgba(255,255,255,.94)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>'
+			: '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none"><circle cx="12" cy="12" r="6.8" fill="rgba(255,255,255,.94)"></circle></svg>';
 		var copy = document.createElement('span');
 		copy.className = 'sonyra-color-controller__pattern-source-card-copy';
 		var title = document.createElement('strong');
@@ -2196,23 +2199,24 @@
 	}
 
 	function assertPatternSourceChoiceDom(root) {
-		var actionSelector = '.sonyra-color-controller__pattern-source-card' + '-action';
-		var bodyTitleSelector = '.sonyra-color-controller__pattern-source-choice' + '-title';
-		var bodyDescriptionSelector = '.sonyra-color-controller__pattern-source-choice' + '-description';
 		if (!root) {
 			throw new Error('SONYRA pattern source choice missing root');
 		}
 		var cards = root.querySelectorAll('[data-pattern-source-choice]');
 		var titles = root.querySelectorAll('.sonyra-color-controller__pattern-source-card-title');
 		var descriptions = root.querySelectorAll('.sonyra-color-controller__pattern-source-card-description');
-		var actions = root.querySelectorAll(actionSelector);
-		var bodyTitles = root.querySelectorAll(bodyTitleSelector);
-		var bodyDescriptions = root.querySelectorAll(bodyDescriptionSelector);
+		var actions = root.querySelectorAll('.sonyra-color-controller__pattern-source-card' + '-action');
+		var bodyTitles = root.querySelectorAll('.sonyra-color-controller__pattern-source-choice' + '-title');
+		var bodyDescriptions = root.querySelectorAll('.sonyra-color-controller__pattern-source-choice' + '-description');
+		var svgs = root.querySelectorAll('.sonyra-color-controller__pattern-source-card-icon svg');
 		if (cards.length !== 2) {
 			throw new Error('SONYRA pattern source choice must render exactly 2 cards');
 		}
 		if (titles.length !== 2 || descriptions.length !== 2) {
 			throw new Error('SONYRA pattern source choice visible title/description nodes missing');
+		}
+		if (svgs.length !== 2) {
+			throw new Error('SONYRA pattern source choice must render exactly 2 SVG icons');
 		}
 		if (actions.length !== 0) {
 			throw new Error('SONYRA pattern source choice action nodes are forbidden');
