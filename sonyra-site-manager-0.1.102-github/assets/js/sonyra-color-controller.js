@@ -539,12 +539,18 @@
 		return stateMap;
 	}
 
-	function resolveModalText(key, fallback) {
+	function resolveModalText(key) {
 		var value = t(key);
+
+		if (typeof value === 'string') {
+			value = value.trim();
+		}
+
 		if (value && value !== key) {
 			return value;
 		}
-		return fallback;
+
+		throw new Error('SONYRA i18n text missing: ' + key);
 	}
 
 	function getSonyraSourceText(key, fallback) {
@@ -555,7 +561,10 @@
 		if (value && value !== key) {
 			return value;
 		}
-		return fallback;
+		if (typeof fallback === 'string' && fallback.trim()) {
+			return fallback.trim();
+		}
+		throw new Error('SONYRA i18n text missing: ' + key);
 	}
 
 	function getColorControllerModalCopy(modal) {
@@ -564,51 +573,68 @@
 		var draftPatternType = modal && modal.draft && modal.draft.pattern_type ? String(modal.draft.pattern_type) : '';
 		var patternType = modal && modal.patternType ? String(modal.patternType) : draftPatternType;
 		var isEdit = mode === 'edit';
+		var isImagePattern = patternType === 'image_pattern';
+		var titleKey = '';
+		var descriptionKey = '';
+
 		if (type === 'pattern' && !isEdit && modal && modal.patternSourceSelected !== true) {
+			titleKey = 'manager.design.colors.pattern_source_modal_title';
+			descriptionKey = 'manager.design.colors.pattern_source_modal_description';
+
 			return {
-				titleKey: 'manager.design.colors.pattern_source_modal_title',
-				descriptionKey: 'manager.design.colors.pattern_source_modal_description',
-				titleText: resolveModalText('manager.design.colors.pattern_source_modal_title', 'Выберите тип паттерна'),
-				descriptionText: resolveModalText('manager.design.colors.pattern_source_modal_description', 'Сначала выберите, как создать паттерн: сгенерировать узор или использовать изображение')
+				titleKey: titleKey,
+				descriptionKey: descriptionKey,
+				titleText: resolveModalText(titleKey),
+				descriptionText: resolveModalText(descriptionKey)
 			};
 		}
-		var map = {
-			color: {
-				title: isEdit ? 'manager.design.colors.title_edit_color' : 'manager.design.colors.title_create_color',
-				description: isEdit ? 'manager.design.colors.modal_color_edit_description' : 'manager.design.colors.modal_color_create_description',
-				titleFallback: isEdit ? 'Редактировать цвет' : 'Создать цвет',
-				descriptionFallback: isEdit ? 'Измените цвет для будущего использования в оформлении' : 'Создайте цвет для будущего использования в оформлении'
-			},
-			gradient: {
-				title: isEdit ? 'manager.design.colors.title_edit_gradient' : 'manager.design.colors.title_create_gradient',
-				description: isEdit ? 'manager.design.colors.modal_gradient_edit_description' : 'manager.design.colors.modal_gradient_create_description',
-				titleFallback: isEdit ? 'Редактировать градиент' : 'Создать градиент',
-				descriptionFallback: isEdit ? 'Измените градиент из цветовых точек' : 'Соберите градиент из двух цветовых точек'
-			},
-			pattern: {
-				title: patternType === 'image_pattern'
-					? (isEdit ? 'manager.design.colors.title_edit_pattern_image' : 'manager.design.colors.title_create_pattern_image')
-					: (isEdit ? 'manager.design.colors.title_edit_pattern_graphic' : 'manager.design.colors.title_create_pattern_graphic'),
-				description: patternType === 'image_pattern'
-					? 'manager.design.colors.modal_pattern_image_description'
-					: 'manager.design.colors.modal_pattern_graphic_description',
-				titleFallback: patternType === 'image_pattern'
-					? (isEdit ? 'Редактировать изображение как паттерн' : 'Изображение как паттерн')
-					: (isEdit ? 'Редактировать паттерн' : 'Создать паттерн'),
-				descriptionFallback: patternType === 'image_pattern'
-					? 'Загрузите изображение и настройте его как повторяемый паттерн для библиотеки сайта'
-					: 'Настройте генератор паттерна и сохраните результат в библиотеку сайта'
-			}
-		};
-		var config = map[type] || map.pattern;
-		var titleText = resolveModalText(config.title, config.titleFallback);
-		var descriptionText = resolveModalText(config.description, config.descriptionFallback);
+
+		if (type === 'color') {
+			titleKey = isEdit ? 'manager.design.colors.title_edit_color' : 'manager.design.colors.title_create_color';
+			descriptionKey = isEdit ? 'manager.design.colors.modal_color_edit_description' : 'manager.design.colors.modal_color_create_description';
+
+			return {
+				titleKey: titleKey,
+				descriptionKey: descriptionKey,
+				titleText: resolveModalText(titleKey),
+				descriptionText: resolveModalText(descriptionKey)
+			};
+		}
+
+		if (type === 'gradient') {
+			titleKey = isEdit ? 'manager.design.colors.title_edit_gradient' : 'manager.design.colors.title_create_gradient';
+			descriptionKey = isEdit ? 'manager.design.colors.modal_gradient_edit_description' : 'manager.design.colors.modal_gradient_create_description';
+
+			return {
+				titleKey: titleKey,
+				descriptionKey: descriptionKey,
+				titleText: resolveModalText(titleKey),
+				descriptionText: resolveModalText(descriptionKey)
+			};
+		}
+
+		if (type === 'pattern') {
+			titleKey = isImagePattern
+				? (isEdit ? 'manager.design.colors.title_edit_pattern_image' : 'manager.design.colors.title_create_pattern_image')
+				: (isEdit ? 'manager.design.colors.title_edit_pattern_graphic' : 'manager.design.colors.title_create_pattern_graphic');
+
+			descriptionKey = isImagePattern
+				? 'manager.design.colors.modal_pattern_image_description'
+				: 'manager.design.colors.modal_pattern_graphic_description';
+
+			return {
+				titleKey: titleKey,
+				descriptionKey: descriptionKey,
+				titleText: resolveModalText(titleKey),
+				descriptionText: resolveModalText(descriptionKey)
+			};
+		}
 
 		return {
-			titleKey: config.title,
-			descriptionKey: config.description,
-			titleText: titleText,
-			descriptionText: descriptionText
+			titleKey: '',
+			descriptionKey: '',
+			titleText: '',
+			descriptionText: ''
 		};
 	}
 
@@ -2147,16 +2173,12 @@
 		grid.appendChild(buildPatternSourceChoiceCard({
 			kind: 'graphic',
 			titleKey: 'manager.design.colors.pattern_source_graphic_title',
-			titleFallback: 'Графический паттерн',
-			descriptionKey: 'manager.design.colors.pattern_source_graphic_description',
-			descriptionFallback: 'Создайте узор из точек, линий, сетки и других графических элементов'
+			descriptionKey: 'manager.design.colors.pattern_source_graphic_description'
 		}));
 		grid.appendChild(buildPatternSourceChoiceCard({
 			kind: 'image',
 			titleKey: 'manager.design.colors.pattern_source_image_title',
-			titleFallback: 'Изображение как паттерн',
-			descriptionKey: 'manager.design.colors.pattern_source_image_description',
-			descriptionFallback: 'Используйте изображение как повторяемый фон'
+			descriptionKey: 'manager.design.colors.pattern_source_image_description'
 		}));
 		wrap.appendChild(grid);
 		assertPatternSourceChoiceDom(wrap);
@@ -2174,9 +2196,6 @@
 		var icon = document.createElement('span');
 		icon.className = 'sonyra-color-controller__pattern-source-card-icon';
 		icon.setAttribute('aria-hidden', 'true');
-		if (config.kind === 'image') {
-			icon.className += ' sonyra-color-controller__pattern-source-card-icon-image';
-		}
 		icon.innerHTML = config.kind === 'image'
 			? '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none"><rect x="4.5" y="5.5" width="15" height="13" rx="3" stroke="rgba(255,255,255,.94)" stroke-width="2"></rect><circle cx="15.6" cy="9.1" r="1.45" fill="rgba(255,255,255,.94)"></circle><path d="M6.8 16.4l4.1-4.4 3 3.1 1.8-1.9 2.7 3.2" stroke="rgba(255,255,255,.94)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>'
 			: '<svg viewBox="0 0 24 24" aria-hidden="true" fill="none"><circle cx="12" cy="12" r="6.8" fill="rgba(255,255,255,.94)"></circle></svg>';
@@ -2240,7 +2259,9 @@
 		if (!state.modal || state.modal.type !== 'pattern' || !state.modal.draft) {
 			return;
 		}
+
 		state.modal.patternSourceSelected = true;
+
 		if (kind === 'image') {
 			state.modal.draft.editor_kind = 'image';
 			state.modal.draft.pattern_type = 'image_pattern';
@@ -2250,6 +2271,14 @@
 				? state.modal.draft.pattern_type
 				: getDefaultPatternType();
 		}
+
+		state.modal.patternType = state.modal.draft.pattern_type;
+
+		state.modal.groupOpen = createPatternGroupState(
+			state.modal.draft.editor_kind,
+			state.modal.draft.pattern_type
+		);
+
 		renderModal();
 	}
 
