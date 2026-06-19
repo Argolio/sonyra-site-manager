@@ -157,6 +157,8 @@
 
 	function renderStandardModal(config) {
 		var settings = config || {};
+		var titleText = typeof settings.titleText === 'string' ? settings.titleText.trim() : '';
+		var descriptionText = typeof settings.descriptionText === 'string' ? settings.descriptionText.trim() : '';
 		var overlay = createNode('div', settings.overlayClassName || 'sonyra-manager-pages-modal-overlay sonyra-manager-modal-overlay');
 		var panel = createNode('div', settings.panelClassName || 'sonyra-manager-pages-modal sonyra-manager-modal');
 		var header = createNode('header', settings.headerClassName || 'sonyra-manager-pages-modal-header sonyra-manager-modal__header');
@@ -168,8 +170,12 @@
 			iconNode: settings.iconNode || null
 		});
 		var copy = createNode('div', settings.copyClassName || 'sonyra-manager-pages-modal-copy');
-		var title = createNode(settings.titleTagName || 'h3', settings.titleClassName || 'sonyra-manager-pages-modal-title', settings.titleText || '');
-		var description = createNode('p', settings.descriptionClassName || 'sonyra-manager-pages-modal-description', settings.descriptionText || '');
+		var title = titleText
+			? createNode(settings.titleTagName || 'h2', settings.titleClassName || 'sonyra-manager-pages-modal-title sonyra-manager-modal__title', titleText)
+			: null;
+		var description = descriptionText
+			? createNode('p', settings.descriptionClassName || 'sonyra-manager-pages-modal-description sonyra-manager-modal__description', descriptionText)
+			: null;
 		var closeButton = renderButton({
 			className: settings.closeClassName || 'sonyra-manager-pages-modal-close',
 			iconKey: settings.closeIconKey || 'x',
@@ -183,17 +189,21 @@
 		applyAttributes(overlay, settings.overlayAttributes || {});
 		applyAttributes(panel, settings.panelAttributes || {});
 
-		if (settings.titleId) {
+		if (title && settings.titleId) {
 			title.id = settings.titleId;
 			panel.setAttribute('aria-labelledby', settings.titleId);
 		}
 
-		if (settings.descriptionText === '' || settings.descriptionHidden === true) {
+		if (description && settings.descriptionHidden === true) {
 			description.hidden = true;
 		}
 
-		copy.appendChild(title);
-		copy.appendChild(description);
+		if (title) {
+			copy.appendChild(title);
+		}
+		if (description) {
+			copy.appendChild(description);
+		}
 		header.appendChild(icon);
 		header.appendChild(copy);
 		header.appendChild(closeButton);

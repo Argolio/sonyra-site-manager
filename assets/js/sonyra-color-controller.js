@@ -539,59 +539,58 @@
 		return stateMap;
 	}
 
-	function getPatternModalTitleKey(modal) {
-		var editorKind = modal && modal.draft && modal.draft.editor_kind ? String(modal.draft.editor_kind) : 'graphic';
-		var mode = modal && modal.mode === 'edit' ? 'edit' : 'create';
-
-		if (editorKind === 'image') {
-			return mode === 'edit'
-				? 'manager.design.colors.title_edit_pattern_image'
-				: 'manager.design.colors.title_create_pattern_image';
+	function resolveModalText(key, fallback) {
+		var value = t(key);
+		if (value && value !== key) {
+			return value;
 		}
-
-		return mode === 'edit'
-			? 'manager.design.colors.title_edit_pattern_graphic'
-			: 'manager.design.colors.title_create_pattern_graphic';
+		return fallback;
 	}
 
-	function getPatternModalDescriptionKey(modal) {
-		var editorKind = modal && modal.draft && modal.draft.editor_kind ? String(modal.draft.editor_kind) : 'graphic';
+	function getColorControllerModalCopy(modal) {
+		var type = modal && modal.entityType ? String(modal.entityType) : (modal && modal.type ? String(modal.type) : '');
+		var mode = modal && modal.mode ? String(modal.mode) : 'create';
+		var draftPatternType = modal && modal.draft && modal.draft.pattern_type ? String(modal.draft.pattern_type) : '';
+		var patternType = modal && modal.patternType ? String(modal.patternType) : draftPatternType;
+		var isEdit = mode === 'edit';
+		var map = {
+			color: {
+				title: isEdit ? 'manager.design.colors.title_edit_color' : 'manager.design.colors.title_create_color',
+				description: isEdit ? 'manager.design.colors.modal_color_edit_description' : 'manager.design.colors.modal_color_create_description',
+				titleFallback: isEdit ? 'Редактировать цвет' : 'Создать цвет',
+				descriptionFallback: isEdit ? 'Измените цвет для будущего использования в оформлении' : 'Создайте цвет для будущего использования в оформлении'
+			},
+			gradient: {
+				title: isEdit ? 'manager.design.colors.title_edit_gradient' : 'manager.design.colors.title_create_gradient',
+				description: isEdit ? 'manager.design.colors.modal_gradient_edit_description' : 'manager.design.colors.modal_gradient_create_description',
+				titleFallback: isEdit ? 'Редактировать градиент' : 'Создать градиент',
+				descriptionFallback: isEdit ? 'Измените градиент из цветовых точек' : 'Соберите градиент из двух цветовых точек'
+			},
+			pattern: {
+				title: patternType === 'image_pattern'
+					? (isEdit ? 'manager.design.colors.title_edit_pattern_image' : 'manager.design.colors.title_create_pattern_image')
+					: (isEdit ? 'manager.design.colors.title_edit_pattern_graphic' : 'manager.design.colors.title_create_pattern_graphic'),
+				description: patternType === 'image_pattern'
+					? 'manager.design.colors.modal_pattern_image_description'
+					: 'manager.design.colors.modal_pattern_graphic_description',
+				titleFallback: patternType === 'image_pattern'
+					? (isEdit ? 'Редактировать изображение как паттерн' : 'Изображение как паттерн')
+					: (isEdit ? 'Редактировать паттерн' : 'Создать паттерн'),
+				descriptionFallback: patternType === 'image_pattern'
+					? 'Загрузите изображение и настройте его как повторяемый паттерн для библиотеки сайта'
+					: 'Настройте генератор паттерна и сохраните результат в библиотеку сайта'
+			}
+		};
+		var config = map[type] || map.pattern;
+		var titleText = resolveModalText(config.title, config.titleFallback);
+		var descriptionText = resolveModalText(config.description, config.descriptionFallback);
 
-		if (editorKind === 'image') {
-			return 'manager.design.colors.modal_pattern_image_description';
-		}
-
-		return 'manager.design.colors.modal_pattern_graphic_description';
-	}
-
-	function getPatternModalTitleText(modal) {
-		var key = getPatternModalTitleKey(modal);
-		var text = t(key);
-		var fallbackKey = modal && modal.mode === 'edit'
-			? 'manager.design.colors.title_edit_pattern'
-			: 'manager.design.colors.title_create_pattern';
-		var fallback = t(fallbackKey);
-
-		if (!text || text === key) {
-			return fallback && fallback !== fallbackKey ? fallback : '';
-		}
-
-		return text;
-	}
-
-	function getPatternModalDescriptionText(modal) {
-		var key = getPatternModalDescriptionKey(modal);
-		var text = t(key);
-		var fallbackKey = modal && modal.draft && modal.draft.pattern_type === 'image_pattern'
-			? 'manager.design.colors.modal_pattern_image_description'
-			: 'manager.design.colors.modal_pattern_graphic_description';
-		var fallback = t(fallbackKey);
-
-		if (!text || text === key) {
-			return fallback && fallback !== fallbackKey ? fallback : '';
-		}
-
-		return text;
+		return {
+			titleKey: config.title,
+			descriptionKey: config.description,
+			titleText: titleText,
+			descriptionText: descriptionText
+		};
 	}
 
 	function getColorValue(item, key, fallbackKey) {
@@ -1276,23 +1275,6 @@
 		var item = itemId ? getItemById(entityType, itemId) : null;
 		var draft;
 
-		if (entityType === 'pattern' && !item) {
-			state.modal = {
-				kind: 'pattern-choice',
-				entityType: 'pattern',
-				itemId: '',
-				mode: 'create',
-				editorKind: '',
-				errors: {},
-				errorHelpers: {},
-				loading: false,
-				scrollTop: 0
-			};
-			setMessage('', '');
-			render();
-			return;
-		}
-
 		draft = createDraft(entityType, item);
 
 		state.modal = {
@@ -1301,6 +1283,8 @@
 			itemId: itemId || '',
 			mode: item ? 'edit' : 'create',
 			draft: draft,
+			patternType: entityType === 'pattern' ? String(draft.pattern_type || '') : '',
+			showTypePicker: entityType === 'pattern' ? !item : false,
 			editorKind: entityType === 'pattern' ? String(draft.editor_kind || 'graphic') : '',
 			generatorExpanded: entityType === 'pattern' ? true : false,
 			groupOpen: entityType === 'pattern' ? createPatternGroupState(String(draft.editor_kind || 'graphic'), String(draft.pattern_type || '')) : {},
@@ -2046,31 +2030,37 @@
 		}, true, getPatternDefinition(draft.pattern_type));
 	}
 
-	function buildPatternChooserBody() {
-		var body = createNode('div', 'sonyra-color-controller__pattern-type-chooser');
-		var options = [
-			{
-				key: 'graphic',
-				title: t('manager.design.colors.pattern_editor_graphic_title'),
-				description: t('manager.design.colors.pattern_editor_graphic_description')
-			},
-			{
-				key: 'image',
-				title: t('manager.design.colors.pattern_editor_image_title'),
-				description: t('manager.design.colors.pattern_editor_image_description')
-			}
-		];
+	function buildPatternTypePicker(modal) {
+		var panel = createNode('div', 'sonyra-color-controller__pattern-type-picker');
+		var title = createNode('div', 'sonyra-color-controller__pattern-type-picker-title', t('manager.design.colors.pattern_type_label'));
+		var grid = createNode('div', 'sonyra-color-controller__pattern-type-picker-grid');
 
-		options.forEach(function (option) {
-			var card = createNode('button', 'sonyra-color-controller__pattern-type-card');
+		Object.keys(patternRegistry).map(function (key) {
+			return patternRegistry[key];
+		}).filter(function (definition) {
+			return !!definition;
+		}).forEach(function (definition) {
+			var card = createNode('button', 'sonyra-color-controller__pattern-type-card' + (modal.draft.pattern_type === definition.key && modal.showTypePicker !== true ? ' is-active' : ''));
+			var preview = renderPatternPreview({
+				pattern_type: definition.key,
+				colors: definition.defaultColors,
+				settings: definition.defaultSettings,
+				media: {}
+			}, false, definition);
+			var copy = createNode('div', 'sonyra-color-controller__pattern-tile-copy');
+
 			card.type = 'button';
-			card.setAttribute('data-color-pattern-editor-kind', option.key);
-			card.appendChild(createNode('strong', 'sonyra-color-controller__pattern-type-card-title', option.title));
-			card.appendChild(createNode('span', 'sonyra-color-controller__pattern-type-card-description', option.description));
-			body.appendChild(card);
+			card.setAttribute('data-color-pattern-type', definition.key);
+			card.appendChild(preview);
+			copy.appendChild(createNode('strong', 'sonyra-color-controller__pattern-type-card-title', definition.label));
+			copy.appendChild(createNode('span', 'sonyra-color-controller__pattern-type-card-description', definition.description));
+			card.appendChild(copy);
+			grid.appendChild(card);
 		});
 
-		return body;
+		panel.appendChild(title);
+		panel.appendChild(grid);
+		return panel;
 	}
 
 	function buildPatternGroupBody(modal, definition, group) {
@@ -2117,30 +2107,40 @@
 				? t('manager.design.colors.pattern_editor_image_title')
 				: (definition && definition.label ? definition.label : '')
 		});
-		var nameField = buildField(
-			t('manager.design.colors.pattern_name_label'),
-			buildTextInput('name', draft.name || ''),
-			modal.errors.name,
-			getModalFieldHelperText(modal, 'name', ''),
-			true
-		);
+		var nameField = createNode('div', 'sonyra-color-controller__pattern-name-field');
+		var nameLabel = createNode('label', 'sonyra-color-controller__pattern-name-label', t('manager.design.colors.pattern_name_label'));
+		var nameInput = buildTextInput('name', draft.name || '');
 		var previewWrap = createNode('div', 'sonyra-color-controller__pattern-result-preview');
 		var preview = buildPatternPreviewFromDraft(draft);
 		var previewHint = createNode('span', 'sonyra-color-controller__editor-preview-copy', t('manager.design.colors.pattern_live_preview_hint'));
+		var helperText = getModalFieldHelperText(modal, 'name', '');
 
 		typeChip.setAttribute('data-color-pattern-result-type', 'true');
 		nameField.setAttribute('data-color-pattern-name-field', 'true');
-		nameField.classList.add('sonyra-color-controller__pattern-name-row');
-		nameField.querySelector('[data-color-modal-field="name"]').classList.add('sonyra-color-controller__pattern-name-input');
+		nameLabel.setAttribute('for', 'sonyra-color-pattern-name');
+		nameInput.id = 'sonyra-color-pattern-name';
+		nameInput.classList.add('sonyra-color-controller__pattern-name-input');
+		nameInput.placeholder = t('manager.design.colors.pattern_name_placeholder');
+		nameInput.setAttribute('aria-label', t('manager.design.colors.pattern_name_label'));
+		nameField.appendChild(nameLabel);
+		nameField.appendChild(nameInput);
+		if (helperText) {
+			nameField.appendChild(createNode('small', 'sonyra-color-controller__field-helper', helperText));
+		}
+		if (modal.errors.name) {
+			nameField.appendChild(createNode('small', 'sonyra-color-controller__field-error', modal.errors.name));
+		}
 		preview.setAttribute('data-color-pattern-preview-live', 'true');
 		card.appendChild(title);
 		copy.appendChild(typeChip);
 		copy.appendChild(nameField);
 		top.appendChild(copy);
 
-		if (modal.mode === 'create') {
-			var backButton = createButton('sonyra-manager-pages-secondary sonyra-color-controller__pattern-back-button', t('manager.design.colors.pattern_back_to_type'), 'arrow-left');
+		if (modal.mode === 'create' && modal.showTypePicker !== true) {
+			var backLabel = t('manager.design.colors.pattern_back_to_type');
+			var backButton = createButton('sonyra-manager-pages-secondary sonyra-color-controller__pattern-back-button', backLabel, 'arrow-left');
 			backButton.setAttribute('data-color-pattern-back-to-choice', 'true');
+			backButton.setAttribute('aria-label', backLabel);
 			actions.appendChild(backButton);
 			top.appendChild(actions);
 		}
@@ -2166,7 +2166,7 @@
 		head.appendChild(headTitle);
 		head.appendChild(headHint);
 
-		if (schema.editorKind === 'graphic') {
+		if (schema.editorKind === 'graphic' && modal.mode === 'edit') {
 			scroll.appendChild(buildPatternAccordionGroup({
 				key: '__generator',
 				kind: 'generator',
@@ -2210,11 +2210,13 @@
 		var definition = getPatternDefinition(draft.pattern_type) || getPatternDefinition(getDefaultPatternType());
 		var schema = getPatternEditorSchema(draft.pattern_type, definition);
 		var shell = createNode('div', 'sonyra-color-controller__pattern-editor');
-		var resultPanel = createNode('div', 'sonyra-color-controller__pattern-result-panel');
+		var left = createNode('div', 'sonyra-color-controller__pattern-left');
+		var right = createNode('div', 'sonyra-color-controller__pattern-right');
 
-		resultPanel.appendChild(buildPatternResultCard(modal, definition));
-		shell.appendChild(resultPanel);
-		shell.appendChild(buildPatternControlsPanel(modal, definition, schema));
+		left.appendChild(buildPatternResultCard(modal, definition));
+		right.appendChild(modal.showTypePicker === true ? buildPatternTypePicker(modal) : buildPatternControlsPanel(modal, definition, schema));
+		shell.appendChild(left);
+		shell.appendChild(right);
 		return shell;
 	}
 
@@ -2226,9 +2228,6 @@
 		if (!state.modal) {
 			return createNode('div');
 		}
-		if (state.modal.kind === 'pattern-choice') {
-			return buildPatternChooserBody();
-		}
 		if (state.modal.entityType === 'color') {
 			return buildColorEditorBody(state.modal);
 		}
@@ -2236,6 +2235,79 @@
 			return buildGradientEditorBody(state.modal);
 		}
 		return buildPatternEditorBody(state.modal);
+	}
+
+	function assertColorControllerModalDom(modalElement, modal) {
+		var titleNode;
+		var descriptionNode;
+		var patternEditor;
+		var patternLeft;
+		var patternRight;
+		var resultCard;
+		var controlsPanel;
+		var nameLabel;
+		var nameInput;
+		var backButton;
+
+		if (!window || !window.SONYRA_MANAGER_DEBUG) {
+			return;
+		}
+
+		if (!modalElement) {
+			throw new Error('SONYRA modal DOM assertion failed: modalElement is missing');
+		}
+
+		titleNode = modalElement.querySelector('.sonyra-manager-modal__title');
+		descriptionNode = modalElement.querySelector('.sonyra-manager-modal__description');
+
+		if (!titleNode || !String(titleNode.textContent || '').trim()) {
+			throw new Error('SONYRA modal DOM assertion failed: modal title is missing');
+		}
+
+		if (!descriptionNode || !String(descriptionNode.textContent || '').trim()) {
+			throw new Error('SONYRA modal DOM assertion failed: modal description is missing');
+		}
+
+		if (!modal || modal.entityType !== 'pattern') {
+			return;
+		}
+
+		patternEditor = modalElement.querySelector('.sonyra-color-controller__pattern-editor');
+		patternLeft = modalElement.querySelector('.sonyra-color-controller__pattern-left');
+		patternRight = modalElement.querySelector('.sonyra-color-controller__pattern-right');
+
+		if (!patternEditor || !patternLeft || !patternRight) {
+			throw new Error('SONYRA modal DOM assertion failed: pattern editor shell is incomplete');
+		}
+
+		if (modal.showTypePicker === true) {
+			if (!modalElement.querySelector('.sonyra-color-controller__pattern-type-picker')) {
+				throw new Error('SONYRA modal DOM assertion failed: pattern type picker is missing');
+			}
+			return;
+		}
+
+		resultCard = modalElement.querySelector('.sonyra-color-controller__pattern-result-card');
+		controlsPanel = modalElement.querySelector('.sonyra-color-controller__pattern-controls-panel');
+		nameLabel = modalElement.querySelector('.sonyra-color-controller__pattern-name-label');
+		nameInput = modalElement.querySelector('.sonyra-color-controller__pattern-name-input');
+		backButton = modalElement.querySelector('.sonyra-color-controller__pattern-back-button');
+
+		if (!resultCard || !controlsPanel) {
+			throw new Error('SONYRA modal DOM assertion failed: pattern result or controls panel is missing');
+		}
+
+		if (!nameLabel || !String(nameLabel.textContent || '').trim()) {
+			throw new Error('SONYRA modal DOM assertion failed: pattern name label is missing');
+		}
+
+		if (!nameInput) {
+			throw new Error('SONYRA modal DOM assertion failed: pattern name input is missing');
+		}
+
+		if (modal.mode === 'create' && (!backButton || !String(backButton.textContent || '').trim())) {
+			throw new Error('SONYRA modal DOM assertion failed: pattern back button text is missing');
+		}
 	}
 
 	function renderModal() {
@@ -2248,28 +2320,22 @@
 
 		document.body.classList.add('sonyra-manager-modal-open');
 
-		var modalTitleText = '';
-		var modalDescriptionText = '';
+		var modalCopy = getColorControllerModalCopy(state.modal);
 
-		if (state.modal.kind === 'pattern-choice') {
-			modalTitleText = t('manager.design.colors.title_create_pattern');
-			modalDescriptionText = t('manager.design.colors.pattern_type_choice_description');
-		} else if (state.modal.entityType === 'pattern') {
-			modalTitleText = getPatternModalTitleText(state.modal);
-			modalDescriptionText = getPatternModalDescriptionText(state.modal);
-		} else {
-			modalTitleText = state.modal.mode === 'edit'
-				? t(getEntityTitleEditKey(state.modal.entityType))
-				: t(getEntityTitleCreateKey(state.modal.entityType));
-			modalDescriptionText = t(getModalDescriptionKey(state.modal.entityType, state.modal.mode));
+		if (!modalCopy.titleText) {
+			throw new Error('SONYRA Color Library modal titleText is empty');
+		}
+
+		if (!modalCopy.descriptionText) {
+			throw new Error('SONYRA Color Library modal descriptionText is empty');
 		}
 
 		var chrome = getManagerUi().renderStandardModal({
 			iconKey: 'settings',
 			closeIconKey: 'x',
 			titleId: 'sonyra-color-modal-title',
-			titleText: modalTitleText,
-			descriptionText: modalDescriptionText,
+			titleText: modalCopy.titleText,
+			descriptionText: modalCopy.descriptionText,
 			panelAttributes: {
 				role: 'dialog',
 				'aria-modal': 'true'
@@ -2289,35 +2355,25 @@
 
 		overlay.setAttribute('data-color-modal-overlay', 'true');
 		body.setAttribute('data-color-modal-scroll', 'true');
-		if (state.modal.kind === 'pattern-choice') {
+		if (state.modal.entityType === 'pattern') {
+			overlay.classList.add('sonyra-color-controller__modal-overlay');
+			chrome.panel.classList.add('sonyra-color-controller__modal-panel', 'sonyra-color-controller__modal-panel-pattern');
+			body.classList.add('sonyra-color-controller__modal-body', 'sonyra-color-controller__modal-body-pattern');
+			footer.classList.add('sonyra-color-controller__modal-footer-pattern');
+		} else if (state.modal.entityType === 'color' || state.modal.entityType === 'gradient') {
 			overlay.classList.add('sonyra-color-controller__modal-overlay');
 			chrome.panel.classList.add('sonyra-color-controller__modal-panel');
 			body.classList.add('sonyra-color-controller__modal-body');
-		} else {
-			if (state.modal.entityType === 'pattern') {
-				overlay.classList.add('sonyra-color-controller__modal-overlay');
-				chrome.panel.classList.add('sonyra-color-controller__modal-panel', 'sonyra-color-controller__modal-panel-pattern');
-				body.classList.add('sonyra-color-controller__modal-body', 'sonyra-color-controller__modal-body-pattern');
-				footer.classList.add('sonyra-color-controller__modal-footer-pattern');
-			} else {
-			}
 		}
-		title.textContent = modalTitleText || '';
-		description.textContent = modalDescriptionText || '';
-		description.hidden = !modalDescriptionText;
 		body.appendChild(buildModalBody());
 		cancel.setAttribute('data-color-close-modal', 'true');
-		if (state.modal.kind === 'pattern-choice') {
-			cancel.textContent = t('manager.pages.actions.cancel');
-			footer.appendChild(cancel);
-		} else {
-			footer.appendChild(cancel);
-			save.setAttribute('data-color-save-modal', 'true');
-			if (state.modal.loading) {
-				save.disabled = true;
-			}
-			footer.appendChild(save);
+		footer.appendChild(cancel);
+		save.setAttribute('data-color-save-modal', 'true');
+		if (state.modal.loading) {
+			save.disabled = true;
 		}
+		footer.appendChild(save);
+		assertColorControllerModalDom(overlay, state.modal);
 
 		return overlay;
 	}
@@ -2499,12 +2555,13 @@
 
 	function rebuildPatternControlsPanel(options) {
 		var settings = options || {};
-		var panel = root.querySelector('[data-color-pattern-controls-scroll]');
+		var right = root.querySelector('.sonyra-color-controller__pattern-right');
 		var definition;
 		var schema;
 		var replacement;
 		var nextPanel;
-		var scrollTop = panel ? panel.scrollTop : 0;
+		var scrollNode = root.querySelector('[data-color-pattern-controls-scroll]');
+		var scrollTop = scrollNode ? scrollNode.scrollTop : 0;
 
 		if (!state.modal || state.modal.entityType !== 'pattern' || state.modal.kind !== 'form') {
 			return;
@@ -2512,10 +2569,11 @@
 
 		definition = getPatternDefinition(state.modal.draft.pattern_type) || getPatternDefinition(getDefaultPatternType());
 		schema = getPatternEditorSchema(state.modal.draft.pattern_type, definition);
-		replacement = buildPatternControlsPanel(state.modal, definition, schema);
+		replacement = state.modal.showTypePicker === true ? buildPatternTypePicker(state.modal) : buildPatternControlsPanel(state.modal, definition, schema);
 
-		if (panel && panel.parentNode && replacement.firstChild) {
-			panel.parentNode.replaceChild(replacement.firstChild, panel);
+		if (right) {
+			clearNode(right);
+			right.appendChild(replacement);
 			nextPanel = root.querySelector('[data-color-pattern-controls-scroll]');
 			if (nextPanel) {
 				nextPanel.scrollTop = settings.resetScroll ? 0 : scrollTop;
@@ -2524,7 +2582,7 @@
 	}
 
 	function patchPatternPreview(modal) {
-		if (!modal || modal.entityType !== 'pattern' || modal.kind !== 'form') {
+		if (!modal || modal.entityType !== 'pattern' || modal.kind !== 'form' || modal.showTypePicker === true) {
 			return;
 		}
 
@@ -2671,6 +2729,8 @@
 		var draft = state.modal.draft;
 
 		draft.pattern_type = patternType;
+		state.modal.patternType = patternType;
+		state.modal.showTypePicker = false;
 		draft.editor_kind = definition.editorKind || 'graphic';
 		draft.colors = mergePatternColors(definition, draft.colors || {});
 		draft.settings = mergePatternSettings(definition, draft.settings || {});
@@ -2950,6 +3010,8 @@
 					settings: {},
 					media: {}
 				}),
+				patternType: getDefaultPatternTypeForEditor(selectedEditorKind),
+				showTypePicker: false,
 				editorKind: selectedEditorKind,
 				generatorExpanded: selectedEditorKind === 'graphic',
 				groupOpen: createPatternGroupState(selectedEditorKind, getDefaultPatternTypeForEditor(selectedEditorKind)),
@@ -2964,19 +3026,7 @@
 		}
 
 		if (patternBackToChoice) {
-			state.modal = {
-				kind: 'pattern-choice',
-				entityType: 'pattern',
-				itemId: '',
-				mode: 'create',
-				editorKind: '',
-				generatorExpanded: true,
-				groupOpen: {},
-				errors: {},
-				errorHelpers: {},
-				loading: false,
-				scrollTop: 0
-			};
+			state.modal.showTypePicker = true;
 			render();
 			return;
 		}
