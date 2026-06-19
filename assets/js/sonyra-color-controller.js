@@ -1276,6 +1276,12 @@
 		var draft;
 
 		draft = createDraft(entityType, item);
+		if (entityType === 'pattern' && !item) {
+			draft.editor_kind = '';
+			draft.pattern_type = '';
+			draft.colors = {};
+			draft.settings = {};
+		}
 
 		state.modal = {
 			kind: 'form',
@@ -1284,10 +1290,10 @@
 			mode: item ? 'edit' : 'create',
 			draft: draft,
 			patternType: entityType === 'pattern' ? String(draft.pattern_type || '') : '',
-			showTypePicker: entityType === 'pattern' ? !item : false,
+			showTypePicker: false,
 			editorKind: entityType === 'pattern' ? String(draft.editor_kind || 'graphic') : '',
 			generatorExpanded: entityType === 'pattern' ? true : false,
-			groupOpen: entityType === 'pattern' ? createPatternGroupState(String(draft.editor_kind || 'graphic'), String(draft.pattern_type || '')) : {},
+			groupOpen: entityType === 'pattern' && draft.editor_kind && draft.pattern_type ? createPatternGroupState(String(draft.editor_kind || 'graphic'), String(draft.pattern_type || '')) : {},
 			errors: {},
 			errorHelpers: {},
 			loading: false,
@@ -2030,37 +2036,105 @@
 		}, true, getPatternDefinition(draft.pattern_type));
 	}
 
-	function buildPatternTypePicker(modal) {
-		var panel = createNode('div', 'sonyra-color-controller__pattern-type-picker');
-		var title = createNode('div', 'sonyra-color-controller__pattern-type-picker-title', t('manager.design.colors.pattern_type_label'));
-		var grid = createNode('div', 'sonyra-color-controller__pattern-type-picker-grid');
 
-		Object.keys(patternRegistry).map(function (key) {
+	function getPatternFlowStep(modal) {
+		if (!modal || !modal.draft) {
+			return 'source-choice';
+		}
+
+		if (!modal.draft.editor_kind) {
+			return 'source-choice';
+		}
+
+		if (modal.draft.editor_kind === 'image') {
+			return 'image-editor';
+		}
+
+		return 'graphic-editor';
+	}
+
+	function setPatternEditorKind(kind) {
+		var definition;
+
+		if (!state.modal || state.modal.entityType !== 'pattern' || !state.modal.draft) {
+			return;
+		}
+
+		if (kind === 'image') {
+			definition = getPatternDefinition('image_pattern');
+			state.modal.draft.editor_kind = 'image';
+			state.modal.draft.pattern_type = 'image_pattern';
+		} else {
+			state.modal.draft.editor_kind = 'graphic';
+			state.modal.draft.pattern_type = state.modal.draft.pattern_type && state.modal.draft.pattern_type !== 'image_pattern'
+				? state.modal.draft.pattern_type
+				: getDefaultPatternType();
+			definition = getPatternDefinition(state.modal.draft.pattern_type) || getPatternDefinition(getDefaultPatternType());
+		}
+
+		state.modal.patternType = state.modal.draft.pattern_type;
+		state.modal.draft.colors = mergePatternColors(definition, state.modal.draft.colors || {});
+		state.modal.draft.settings = mergePatternSettings(definition, state.modal.draft.settings || {});
+		state.modal.groupOpen = createPatternGroupState(state.modal.draft.editor_kind, state.modal.draft.pattern_type);
+		render();
+	}
+
+	function resetPatternEditorSource() {
+		if (!state.modal || state.modal.entityType !== 'pattern' || !state.modal.draft) {
+			return;
+		}
+
+		state.modal.draft.editor_kind = '';
+		state.modal.draft.pattern_type = '';
+		state.modal.patternType = '';
+		state.modal.groupOpen = {};
+		render();
+	}
+
+	function getPatternDefinitionsList() {
+		return Object.keys(patternRegistry).map(function (key) {
 			return patternRegistry[key];
 		}).filter(function (definition) {
 			return !!definition;
-		}).forEach(function (definition) {
-			var card = createNode('button', 'sonyra-color-controller__pattern-type-card' + (modal.draft.pattern_type === definition.key && modal.showTypePicker !== true ? ' is-active' : ''));
-			var preview = renderPatternPreview({
-				pattern_type: definition.key,
-				colors: definition.defaultColors,
-				settings: definition.defaultSettings,
-				media: {}
-			}, false, definition);
-			var copy = createNode('div', 'sonyra-color-controller__pattern-tile-copy');
-
-			card.type = 'button';
-			card.setAttribute('data-color-pattern-type', definition.key);
-			card.appendChild(preview);
-			copy.appendChild(createNode('strong', 'sonyra-color-controller__pattern-type-card-title', definition.label));
-			copy.appendChild(createNode('span', 'sonyra-color-controller__pattern-type-card-description', definition.description));
-			card.appendChild(copy);
-			grid.appendChild(card);
 		});
+	}
 
-		panel.appendChild(title);
-		panel.appendChild(grid);
-		return panel;
+	function getPatternControlDefinition(definition, controlKey) {
+		return findPatternControlDefinition(definition, controlKey);
+	}
+
+	function shouldShowPatternSlot(slot, draft) {
+		return !!slot && isVisibleByRule(slot.visible_when, draft);
+	}
+
+	function buildPatternSourceChoice(modal) {
+		var wrap = createNode('div', 'sonyra-color-controller__pattern-source');
+		var head = createNode('div', 'sonyra-color-controller__pattern-source-head');
+		var grid = createNode('div', 'sonyra-color-controller__pattern-source-grid');
+		var graphic = createNode('button', 'sonyra-color-controller__pattern-source-card');
+		var image = createNode('button', 'sonyra-color-controller__pattern-source-card');
+
+		head.appendChild(createNode('h3', 'sonyra-color-controller__pattern-source-title', t('manager.design.colors.pattern_source_title')));
+		head.appendChild(createNode('p', 'sonyra-color-controller__pattern-source-description', t('manager.design.colors.pattern_source_description')));
+		wrap.appendChild(head);
+
+		graphic.type = 'button';
+		graphic.setAttribute('data-pattern-source', 'graphic');
+		graphic.appendChild(createNode('strong', 'sonyra-color-controller__pattern-source-card-title', t('manager.design.colors.pattern_source_graphic_title')));
+		graphic.appendChild(createNode('span', 'sonyra-color-controller__pattern-source-card-description', t('manager.design.colors.pattern_source_graphic_description')));
+		graphic.appendChild(createNode('span', 'sonyra-color-controller__pattern-source-card-action', t('manager.design.colors.pattern_source_choose_graphic')));
+
+		image.type = 'button';
+		image.setAttribute('data-pattern-source', 'image');
+		image.appendChild(createNode('strong', 'sonyra-color-controller__pattern-source-card-title', t('manager.design.colors.pattern_source_image_title')));
+		image.appendChild(createNode('span', 'sonyra-color-controller__pattern-source-card-description', t('manager.design.colors.pattern_source_image_description')));
+		image.appendChild(createNode('span', 'sonyra-color-controller__pattern-source-card-action', t('manager.design.colors.pattern_source_choose_image')));
+
+		grid.appendChild(graphic);
+		grid.appendChild(image);
+		wrap.appendChild(grid);
+
+		return wrap;
 	}
 
 	function buildPatternGroupBody(modal, definition, group) {
@@ -2093,131 +2167,247 @@
 		return body.childNodes.length ? body : null;
 	}
 
-	function buildPatternResultCard(modal, definition) {
-		var draft = modal.draft;
-		var card = createNode('div', 'sonyra-color-controller__pattern-result-card');
-		var title = createNode('div', 'sonyra-color-controller__pattern-result-title', t('manager.design.colors.pattern_result_title'));
-		var meta = createNode('div', 'sonyra-color-controller__pattern-result-meta');
-		var top = createNode('div', 'sonyra-color-controller__pattern-result-top');
-		var copy = createNode('div', 'sonyra-color-controller__pattern-result-copy');
-		var actions = createNode('div', 'sonyra-color-controller__pattern-result-actions');
-		var typeChip = getManagerUi().renderMetaChip({
-			className: 'sonyra-manager-meta-chip sonyra-color-controller__pattern-result-chip',
-			text: draft.editor_kind === 'image'
-				? t('manager.design.colors.pattern_editor_image_title')
-				: (definition && definition.label ? definition.label : '')
-		});
-		var nameField = createNode('div', 'sonyra-color-controller__pattern-name-field');
-		var nameLabel = createNode('label', 'sonyra-color-controller__pattern-name-label', t('manager.design.colors.pattern_name_label'));
-		var nameInput = buildTextInput('name', draft.name || '');
-		var previewWrap = createNode('div', 'sonyra-color-controller__pattern-result-preview');
-		var preview = buildPatternPreviewFromDraft(draft);
-		var previewHint = createNode('span', 'sonyra-color-controller__editor-preview-copy', t('manager.design.colors.pattern_live_preview_hint'));
-		var helperText = getModalFieldHelperText(modal, 'name', '');
 
-		typeChip.setAttribute('data-color-pattern-result-type', 'true');
-		nameField.setAttribute('data-color-pattern-name-field', 'true');
-		nameLabel.setAttribute('for', 'sonyra-color-pattern-name');
-		nameInput.id = 'sonyra-color-pattern-name';
-		nameInput.classList.add('sonyra-color-controller__pattern-name-input');
-		nameInput.placeholder = t('manager.design.colors.pattern_name_placeholder');
-		nameInput.setAttribute('aria-label', t('manager.design.colors.pattern_name_label'));
-		nameField.appendChild(nameLabel);
-		nameField.appendChild(nameInput);
-		if (helperText) {
-			nameField.appendChild(createNode('small', 'sonyra-color-controller__field-helper', helperText));
-		}
-		if (modal.errors.name) {
-			nameField.appendChild(createNode('small', 'sonyra-color-controller__field-error', modal.errors.name));
-		}
-		preview.setAttribute('data-color-pattern-preview-live', 'true');
-		card.appendChild(title);
-		copy.appendChild(typeChip);
-		copy.appendChild(nameField);
-		top.appendChild(copy);
-
-		if (modal.mode === 'create' && modal.showTypePicker !== true) {
-			var backLabel = t('manager.design.colors.pattern_back_to_type');
-			var backButton = createButton('sonyra-manager-pages-secondary sonyra-color-controller__pattern-back-button', backLabel, 'arrow-left');
-			backButton.setAttribute('data-color-pattern-back-to-choice', 'true');
-			backButton.setAttribute('aria-label', backLabel);
-			actions.appendChild(backButton);
-			top.appendChild(actions);
-		}
-
-		previewWrap.appendChild(preview);
-		meta.appendChild(top);
-		meta.appendChild(previewWrap);
-		meta.appendChild(previewHint);
-		card.appendChild(meta);
-
-		return card;
+	function buildPatternNameField(modal) {
+		var draft = modal && modal.draft ? modal.draft : {};
+		var field = createNode('div', 'sonyra-color-controller__pattern-simple-field');
+		var label = createNode('label', 'sonyra-color-controller__pattern-simple-label', t('manager.design.colors.pattern_name_label'));
+		var input = createNode('input', 'sonyra-color-controller__pattern-simple-input');
+		var inputId = 'sonyra-pattern-name-' + String(draft.id || 'new');
+		label.setAttribute('for', inputId);
+		input.id = inputId;
+		input.type = 'text';
+		input.value = draft.name || '';
+		input.placeholder = t('manager.design.colors.pattern_name_placeholder');
+		input.setAttribute('data-pattern-name-input', 'true');
+		field.appendChild(label);
+		field.appendChild(input);
+		return field;
 	}
 
-	function buildPatternControlsPanel(modal, definition, schema) {
-		var panel = createNode('div', 'sonyra-color-controller__pattern-controls-panel');
-		var head = createNode('div', 'sonyra-color-controller__pattern-controls-head');
-		var headTitle = createNode('div', 'sonyra-color-controller__pattern-controls-title', t('manager.design.colors.pattern_controls_title'));
-		var headHint = createNode('div', 'sonyra-color-controller__pattern-controls-hint', t('manager.design.colors.pattern_controls_hint'));
-		var scroll = createNode('div', 'sonyra-color-controller__pattern-controls-scroll');
+	function buildPatternPreviewBlock(modal) {
+		var draft = modal && modal.draft ? modal.draft : {};
+		var block = createNode('div', 'sonyra-color-controller__pattern-simple-preview-block');
+		var previewWrap = createNode('div', 'sonyra-color-controller__pattern-simple-preview-wrap');
+		block.appendChild(createNode('div', 'sonyra-color-controller__pattern-simple-section-title', t('manager.design.colors.pattern_preview_label')));
+		previewWrap.appendChild(buildPatternPreviewFromDraft({
+			pattern_type: draft.pattern_type || getDefaultPatternType(),
+			colors: draft.colors || {},
+			settings: draft.settings || {},
+			media: draft.media || {}
+		}));
+		block.appendChild(previewWrap);
+		return block;
+	}
 
-		scroll.setAttribute('data-color-pattern-settings-scroll', 'true');
-		scroll.setAttribute('data-color-pattern-controls-scroll', 'true');
-		head.appendChild(headTitle);
-		head.appendChild(headHint);
-
-		if (schema.editorKind === 'graphic' && modal.mode === 'edit') {
-			scroll.appendChild(buildPatternAccordionGroup({
-				key: '__generator',
-				kind: 'generator',
-				title: t('manager.design.colors.group_pattern_generator'),
-				summary: definition && definition.label ? definition.label : '',
-				defaultOpen: modal.generatorExpanded !== false,
-				body: (function () {
-					var fragment = createNode('div', 'sonyra-color-controller__pattern-generator-group');
-					fragment.appendChild(buildPatternGeneratorPicker(modal.draft.pattern_type, 'graphic'));
-					fragment.appendChild(createNode('span', 'sonyra-color-controller__field-helper', t('manager.design.colors.pattern_generator_hint')));
-					return fragment;
-				})()
-			}));
-		}
-
-		(schema.groups || []).forEach(function (group) {
-			var body = buildPatternGroupBody(modal, definition, group);
-			var isOpen = !modal.groupOpen || modal.groupOpen[group.key] !== false;
-
-			if (!body) {
-				return;
-			}
-
-			scroll.appendChild(buildPatternAccordionGroup({
-				key: group.key,
-				kind: 'group',
-				title: getControlGroupLabel(group.titleKey),
-				summary: '',
-				defaultOpen: isOpen,
-				body: body
-			}));
+	function buildPatternGraphicTypeSelect(modal) {
+		var draft = modal && modal.draft ? modal.draft : {};
+		var field = createNode('div', 'sonyra-color-controller__pattern-simple-field');
+		var grid = createNode('div', 'sonyra-color-controller__pattern-simple-type-grid');
+		field.appendChild(createNode('div', 'sonyra-color-controller__pattern-simple-label', t('manager.design.colors.pattern_graphic_type_label')));
+		getPatternDefinitionsList().filter(function (definition) {
+			return definition && definition.editorKind !== 'image' && definition.key !== 'image_pattern';
+		}).forEach(function (definition) {
+			var card = createNode('button', 'sonyra-color-controller__pattern-simple-type-card');
+			card.type = 'button';
+			card.setAttribute('data-pattern-type', definition.key);
+			card.classList.toggle('is-active', draft.pattern_type === definition.key);
+			card.appendChild(renderPatternPreview(createPatternDraft({
+				pattern_type: definition.key,
+				editor_kind: 'graphic',
+				name: definition.label || ''
+			}), false, definition));
+			card.appendChild(createNode('strong', 'sonyra-color-controller__pattern-simple-type-title', definition.label || ''));
+			card.appendChild(createNode('span', 'sonyra-color-controller__pattern-simple-type-description', definition.description || ''));
+			grid.appendChild(card);
 		});
+		field.appendChild(grid);
+		return field;
+	}
 
-		panel.appendChild(head);
-		panel.appendChild(scroll);
-		return panel;
+	function buildPatternSimpleControl(control, modal) {
+		var draft = modal && modal.draft ? modal.draft : {};
+		var settings = draft.settings || {};
+		var key = control.key;
+		var field = createNode('div', 'sonyra-color-controller__pattern-simple-control');
+		var labelText = control.label || t(control.labelKey || control.titleKey || '');
+		var label = createNode('label', 'sonyra-color-controller__pattern-simple-label', labelText);
+		var type = String(control.type || '');
+		var currentValue;
+		if (type === 'slider' || type === 'stepper' || type === 'range' || type === 'angle') {
+			var input = createNode('input', 'sonyra-color-controller__pattern-simple-range');
+			var value = settings[key] !== undefined ? settings[key] : (control.defaultValue !== undefined ? control.defaultValue : (control.min !== undefined ? control.min : 0));
+			var valueNode = createNode('span', 'sonyra-color-controller__pattern-simple-value', String(value));
+			input.type = 'range';
+			input.min = control.min !== undefined ? String(control.min) : '0';
+			input.max = control.max !== undefined ? String(control.max) : '100';
+			input.step = control.step !== undefined ? String(control.step) : '1';
+			input.value = String(value);
+			input.setAttribute('data-pattern-setting', key);
+			field.appendChild(label);
+			field.appendChild(input);
+			field.appendChild(valueNode);
+			return field;
+		}
+		if (type === 'boolean' || type === 'switch' || type === 'toggle') {
+			var button = createNode('button', 'sonyra-color-controller__pattern-simple-switch');
+			button.type = 'button';
+			button.setAttribute('role', 'switch');
+			button.setAttribute('data-pattern-setting', key);
+			button.setAttribute('aria-checked', settings[key] === true ? 'true' : 'false');
+			button.appendChild(createNode('span', 'sonyra-color-controller__pattern-simple-switch-thumb'));
+			field.appendChild(label);
+			field.appendChild(button);
+			return field;
+		}
+		if (type === 'position') {
+			var positionSelect = createNode('select', 'sonyra-color-controller__pattern-simple-select');
+			['top-left', 'top', 'top-right', 'left', 'center', 'right', 'bottom-left', 'bottom', 'bottom-right'].forEach(function (position) {
+				var optionNode = createNode('option', '');
+				optionNode.value = position;
+				optionNode.textContent = t('manager.design.colors.option_' + position) || position;
+				optionNode.selected = String(settings[key] !== undefined ? settings[key] : '') === String(position);
+				positionSelect.appendChild(optionNode);
+			});
+			positionSelect.setAttribute('data-pattern-setting', key);
+			field.appendChild(label);
+			field.appendChild(positionSelect);
+			return field;
+		}
+		if (type === 'segmented' || type === 'enum' || Array.isArray(control.options)) {
+			var select = createNode('select', 'sonyra-color-controller__pattern-simple-select');
+			currentValue = settings[key] !== undefined ? settings[key] : control.defaultValue;
+			select.setAttribute('data-pattern-setting', key);
+			(control.options || []).forEach(function (option) {
+				var optionNode = createNode('option', '');
+				var optionValue = typeof option === 'object' ? option.value : option;
+				var optionLabelKey = option && typeof option === 'object' ? option.labelKey : '';
+				var optionLabel = option && typeof option === 'object' ? option.label : option;
+				optionNode.value = String(optionValue);
+				optionNode.textContent = optionLabelKey ? (t(optionLabelKey) || String(optionLabel || optionValue)) : String(optionLabel || optionValue);
+				optionNode.selected = String(currentValue) === String(optionValue);
+				select.appendChild(optionNode);
+			});
+			field.appendChild(label);
+			field.appendChild(select);
+			return field;
+		}
+		return field;
+	}
+
+	function buildPatternSimpleColorSlot(slotKey, modal) {
+		var draft = modal && modal.draft ? modal.draft : {};
+		var colors = draft.colors || {};
+		var definition = getPatternDefinition(draft.pattern_type) || getPatternDefinition(getDefaultPatternType());
+		var slot = findPatternColorSlotDefinition(definition, slotKey);
+		var field = createNode('div', 'sonyra-color-controller__pattern-simple-control');
+		var label = createNode('label', 'sonyra-color-controller__pattern-simple-label', slot && slot.label ? slot.label : (t('manager.design.colors.color_slot_' + slotKey) || slotKey));
+		var input = createNode('input', 'sonyra-color-controller__pattern-simple-color');
+		var fallback = definition && definition.defaultColors ? definition.defaultColors[slotKey] : '';
+		input.type = 'color';
+		input.value = normalizeHex(colors[slotKey] || '') || normalizeHex(fallback || '') || '#7C3AED';
+		input.setAttribute('data-pattern-color', slotKey);
+		field.appendChild(label);
+		field.appendChild(input);
+		return field;
+	}
+
+	function buildPatternSimpleImageBlock(modal) {
+		var block = createNode('div', 'sonyra-color-controller__pattern-simple-image-block');
+		block.appendChild(createNode('strong', 'sonyra-color-controller__pattern-simple-group-title', t('manager.design.colors.pattern_image_block_title')));
+		block.appendChild(createNode('p', 'sonyra-color-controller__pattern-simple-section-hint', t('manager.design.colors.pattern_image_block_hint')));
+		if (state.mediaUploadUrl || state.mediaLibraryUrl) {
+			block.appendChild(buildMediaControl(modal));
+		} else {
+			block.appendChild(createNode('div', 'sonyra-color-controller__pattern-upload-placeholder', t('manager.design.colors.pattern_upload_placeholder')));
+		}
+		return block;
+	}
+
+	function buildPatternSimpleSettings(modal) {
+		var draft = modal && modal.draft ? modal.draft : {};
+		var definition = getPatternDefinition(draft.pattern_type) || getPatternDefinition(getDefaultPatternType());
+		var schema = getPatternEditorSchema(draft.pattern_type || getDefaultPatternType(), definition);
+		var block = createNode('div', 'sonyra-color-controller__pattern-simple-settings');
+		block.appendChild(createNode('div', 'sonyra-color-controller__pattern-simple-section-title', t('manager.design.colors.pattern_settings_label')));
+		block.appendChild(createNode('p', 'sonyra-color-controller__pattern-simple-section-hint', t('manager.design.colors.pattern_basic_settings_hint')));
+		(schema.groups || []).forEach(function (group) {
+			var groupBlock = createNode('div', 'sonyra-color-controller__pattern-simple-group');
+			groupBlock.appendChild(createNode('strong', 'sonyra-color-controller__pattern-simple-group-title', t(group.titleKey)));
+			(group.controlKeys || []).forEach(function (key) {
+				var control = getPatternControlDefinition(definition, key);
+				if (control && isVisibleByRule(control.visible_when, draft)) {
+					groupBlock.appendChild(buildPatternSimpleControl(control, modal));
+				}
+			});
+			(group.colorSlots || []).forEach(function (slot) {
+				if (typeof slot === 'string') {
+					groupBlock.appendChild(buildPatternSimpleColorSlot(slot, modal));
+				} else if (slot && shouldShowPatternSlot(slot, draft)) {
+					groupBlock.appendChild(buildPatternSimpleColorSlot(slot.key, modal));
+				}
+			});
+			if (group.media) {
+				groupBlock.appendChild(buildPatternSimpleImageBlock(modal));
+			}
+			block.appendChild(groupBlock);
+		});
+		return block;
+	}
+
+	function buildPatternGraphicEditor(modal) {
+		var wrap = createNode('div', 'sonyra-color-controller__pattern-simple-editor');
+		var back = createNode('button', 'sonyra-color-controller__pattern-simple-back');
+		back.type = 'button';
+		back.setAttribute('data-pattern-back-source', 'true');
+		back.textContent = t('manager.design.colors.pattern_back_to_source');
+		wrap.appendChild(back);
+		wrap.appendChild(buildPatternNameField(modal));
+		wrap.appendChild(buildPatternGraphicTypeSelect(modal));
+		wrap.appendChild(buildPatternPreviewBlock(modal));
+		wrap.appendChild(buildPatternSimpleSettings(modal));
+		return wrap;
+	}
+
+	function buildPatternImageEditor(modal) {
+		var wrap = createNode('div', 'sonyra-color-controller__pattern-simple-editor');
+		var back = createNode('button', 'sonyra-color-controller__pattern-simple-back');
+		back.type = 'button';
+		back.setAttribute('data-pattern-back-source', 'true');
+		back.textContent = t('manager.design.colors.pattern_back_to_source');
+		wrap.appendChild(back);
+		wrap.appendChild(buildPatternNameField(modal));
+		wrap.appendChild(buildPatternPreviewBlock(modal));
+		wrap.appendChild(buildPatternSimpleImageBlock(modal));
+		wrap.appendChild(buildPatternSimpleSettings(modal));
+		return wrap;
+	}
+
+	function buildPatternTypePicker(modal) {
+		return buildPatternGraphicTypeSelect(modal);
+	}
+
+	function buildPatternResultCard(modal) {
+		return buildPatternPreviewBlock(modal);
+	}
+
+	function buildPatternControlsPanel(modal) {
+		return buildPatternSimpleSettings(modal);
 	}
 
 	function buildPatternEditorLayout(modal) {
-		var draft = modal.draft;
-		var definition = getPatternDefinition(draft.pattern_type) || getPatternDefinition(getDefaultPatternType());
-		var schema = getPatternEditorSchema(draft.pattern_type, definition);
-		var shell = createNode('div', 'sonyra-color-controller__pattern-editor');
-		var left = createNode('div', 'sonyra-color-controller__pattern-left');
-		var right = createNode('div', 'sonyra-color-controller__pattern-right');
-
-		left.appendChild(buildPatternResultCard(modal, definition));
-		right.appendChild(modal.showTypePicker === true ? buildPatternTypePicker(modal) : buildPatternControlsPanel(modal, definition, schema));
-		shell.appendChild(left);
-		shell.appendChild(right);
-		return shell;
+		var step = getPatternFlowStep(modal);
+		var wrap = createNode('div', 'sonyra-color-controller__pattern-simple');
+		if (step === 'source-choice') {
+			wrap.appendChild(buildPatternSourceChoice(modal));
+			return wrap;
+		}
+		if (step === 'image-editor') {
+			wrap.appendChild(buildPatternImageEditor(modal));
+			return wrap;
+		}
+		wrap.appendChild(buildPatternGraphicEditor(modal));
+		return wrap;
 	}
 
 	function buildPatternEditorBody(modal) {
@@ -2237,17 +2427,11 @@
 		return buildPatternEditorBody(state.modal);
 	}
 
+
 	function assertColorControllerModalDom(modalElement, modal) {
 		var titleNode;
 		var descriptionNode;
-		var patternEditor;
-		var patternLeft;
-		var patternRight;
-		var resultCard;
-		var controlsPanel;
-		var nameLabel;
-		var nameInput;
-		var backButton;
+		var patternSimple;
 
 		if (!window || !window.SONYRA_MANAGER_DEBUG) {
 			return;
@@ -2272,41 +2456,36 @@
 			return;
 		}
 
-		patternEditor = modalElement.querySelector('.sonyra-color-controller__pattern-editor');
-		patternLeft = modalElement.querySelector('.sonyra-color-controller__pattern-left');
-		patternRight = modalElement.querySelector('.sonyra-color-controller__pattern-right');
-
-		if (!patternEditor || !patternLeft || !patternRight) {
-			throw new Error('SONYRA modal DOM assertion failed: pattern editor shell is incomplete');
+		patternSimple = modalElement.querySelector('.sonyra-color-controller__pattern-simple');
+		if (!patternSimple) {
+			throw new Error('SONYRA modal DOM assertion failed: simple pattern editor is missing');
 		}
 
-		if (modal.showTypePicker === true) {
-			if (!modalElement.querySelector('.sonyra-color-controller__pattern-type-picker')) {
-				throw new Error('SONYRA modal DOM assertion failed: pattern type picker is missing');
+		if (getPatternFlowStep(modal) === 'source-choice') {
+			if (!modalElement.querySelector('.sonyra-color-controller__pattern-source-title') || !modalElement.querySelectorAll('[data-pattern-source]').length) {
+				throw new Error('SONYRA modal DOM assertion failed: source choice is incomplete');
 			}
 			return;
 		}
 
-		resultCard = modalElement.querySelector('.sonyra-color-controller__pattern-result-card');
-		controlsPanel = modalElement.querySelector('.sonyra-color-controller__pattern-controls-panel');
-		nameLabel = modalElement.querySelector('.sonyra-color-controller__pattern-name-label');
-		nameInput = modalElement.querySelector('.sonyra-color-controller__pattern-name-input');
-		backButton = modalElement.querySelector('.sonyra-color-controller__pattern-back-button');
-
-		if (!resultCard || !controlsPanel) {
-			throw new Error('SONYRA modal DOM assertion failed: pattern result or controls panel is missing');
+		if (!modalElement.querySelector('.sonyra-color-controller__pattern-simple-editor')) {
+			throw new Error('SONYRA modal DOM assertion failed: editor body is missing');
 		}
 
-		if (!nameLabel || !String(nameLabel.textContent || '').trim()) {
+		if (!modalElement.querySelector('.sonyra-color-controller__pattern-simple-label') || !modalElement.querySelector('[data-pattern-name-input]')) {
 			throw new Error('SONYRA modal DOM assertion failed: pattern name label is missing');
 		}
 
-		if (!nameInput) {
-			throw new Error('SONYRA modal DOM assertion failed: pattern name input is missing');
+		if (!modalElement.querySelector('.sonyra-color-controller__pattern-simple-preview-block')) {
+			throw new Error('SONYRA modal DOM assertion failed: preview block is missing');
 		}
 
-		if (modal.mode === 'create' && (!backButton || !String(backButton.textContent || '').trim())) {
-			throw new Error('SONYRA modal DOM assertion failed: pattern back button text is missing');
+		if (!modalElement.querySelector('.sonyra-color-controller__pattern-simple-settings')) {
+			throw new Error('SONYRA modal DOM assertion failed: settings block is missing');
+		}
+
+		if (!modalElement.querySelector('[data-pattern-back-source]')) {
+			throw new Error('SONYRA modal DOM assertion failed: back to source button is missing');
 		}
 	}
 
@@ -2369,7 +2548,7 @@
 		cancel.setAttribute('data-color-close-modal', 'true');
 		footer.appendChild(cancel);
 		save.setAttribute('data-color-save-modal', 'true');
-		if (state.modal.loading) {
+		if (state.modal.loading || (state.modal.entityType === 'pattern' && getPatternFlowStep(state.modal) === 'source-choice')) {
 			save.disabled = true;
 		}
 		footer.appendChild(save);
@@ -2553,40 +2732,18 @@
 		});
 	}
 
-	function rebuildPatternControlsPanel(options) {
-		var settings = options || {};
-		var right = root.querySelector('.sonyra-color-controller__pattern-right');
-		var definition;
-		var schema;
-		var replacement;
-		var nextPanel;
-		var scrollNode = root.querySelector('[data-color-pattern-controls-scroll]');
-		var scrollTop = scrollNode ? scrollNode.scrollTop : 0;
-
+	function rebuildPatternControlsPanel() {
 		if (!state.modal || state.modal.entityType !== 'pattern' || state.modal.kind !== 'form') {
 			return;
 		}
 
-		definition = getPatternDefinition(state.modal.draft.pattern_type) || getPatternDefinition(getDefaultPatternType());
-		schema = getPatternEditorSchema(state.modal.draft.pattern_type, definition);
-		replacement = state.modal.showTypePicker === true ? buildPatternTypePicker(state.modal) : buildPatternControlsPanel(state.modal, definition, schema);
-
-		if (right) {
-			clearNode(right);
-			right.appendChild(replacement);
-			nextPanel = root.querySelector('[data-color-pattern-controls-scroll]');
-			if (nextPanel) {
-				nextPanel.scrollTop = settings.resetScroll ? 0 : scrollTop;
-			}
-		}
+		render();
 	}
 
 	function patchPatternPreview(modal) {
-		if (!modal || modal.entityType !== 'pattern' || modal.kind !== 'form' || modal.showTypePicker === true) {
+		if (!modal || modal.entityType !== 'pattern' || modal.kind !== 'form') {
 			return;
 		}
-
-		refreshPatternEditorRuntime('');
 	}
 
 	function refreshPatternEditorRuntime(fieldName) {
@@ -2730,15 +2887,12 @@
 
 		draft.pattern_type = patternType;
 		state.modal.patternType = patternType;
-		state.modal.showTypePicker = false;
 		draft.editor_kind = definition.editorKind || 'graphic';
 		draft.colors = mergePatternColors(definition, draft.colors || {});
 		draft.settings = mergePatternSettings(definition, draft.settings || {});
 		state.modal.groupOpen = createPatternGroupState(draft.editor_kind, draft.pattern_type);
 		state.modal.generatorExpanded = state.modal.groupOpen.__generator !== false;
-		rebuildPatternControlsPanel({ resetScroll: true });
-		patchPatternPreview(state.modal);
-		refreshPatternEditorRuntime('');
+		render();
 	}
 
 	function applyDuplicateNameError() {
@@ -2946,6 +3100,10 @@
 		var mediaRemove = event.target.closest('[data-color-media-remove]');
 		var patternEditorKind = event.target.closest('[data-color-pattern-editor-kind]');
 		var patternBackToChoice = event.target.closest('[data-color-pattern-back-to-choice]');
+		var patternSource = event.target.closest('[data-pattern-source]');
+		var patternBackSource = event.target.closest('[data-pattern-back-source]');
+		var patternSimpleType = event.target.closest('[data-pattern-type]');
+		var patternSimpleSwitch = event.target.closest('[data-pattern-setting][role="switch"]');
 		var fileInput;
 		var mediaItem;
 
@@ -2997,6 +3155,30 @@
 			return;
 		}
 
+		if (patternSource) {
+			setPatternEditorKind(patternSource.getAttribute('data-pattern-source') || 'graphic');
+			return;
+		}
+
+		if (patternBackSource) {
+			resetPatternEditorSource();
+			return;
+		}
+
+		if (patternSimpleType) {
+			setPatternType(patternSimpleType.getAttribute('data-pattern-type') || getDefaultPatternType());
+			return;
+		}
+
+		if (patternSimpleSwitch) {
+			if (state.modal && state.modal.entityType === 'pattern' && state.modal.draft) {
+				var switchKey = patternSimpleSwitch.getAttribute('data-pattern-setting') || '';
+				state.modal.draft.settings[switchKey] = patternSimpleSwitch.getAttribute('aria-checked') !== 'true';
+				render();
+			}
+			return;
+		}
+
 		if (patternEditorKind) {
 			var selectedEditorKind = patternEditorKind.getAttribute('data-color-pattern-editor-kind') || 'graphic';
 			state.modal = {
@@ -3026,8 +3208,7 @@
 		}
 
 		if (patternBackToChoice) {
-			state.modal.showTypePicker = true;
-			render();
+			resetPatternEditorSource();
 			return;
 		}
 
@@ -3112,7 +3293,23 @@
 
 	root.addEventListener('input', function (event) {
 		var field = event.target.closest('[data-color-modal-field]');
+		var patternNameInput = event.target.closest('[data-pattern-name-input]');
+		var patternSettingInput = event.target.closest('[data-pattern-setting]');
 		var fieldName;
+
+		if (patternNameInput && state.modal && state.modal.entityType === 'pattern' && state.modal.draft) {
+			state.modal.draft.name = patternNameInput.value;
+			return;
+		}
+
+		if (patternSettingInput && state.modal && state.modal.entityType === 'pattern' && state.modal.draft) {
+			var patternSettingKey = patternSettingInput.getAttribute('data-pattern-setting') || '';
+			state.modal.draft.settings[patternSettingKey] = patternSettingInput.type === 'range'
+				? Number(patternSettingInput.value || 0)
+				: String(patternSettingInput.value || '');
+			render();
+			return;
+		}
 
 		if (field) {
 			fieldName = field.getAttribute('data-color-modal-field') || '';
@@ -3141,6 +3338,8 @@
 		var file = event.target.closest('[data-color-media-file]');
 		var picker = event.target.closest('[data-color-picker-input]');
 		var field = event.target.closest('[data-color-modal-field]');
+		var patternSettingInput = event.target.closest('[data-pattern-setting]');
+		var patternColor = event.target.closest('[data-pattern-color]');
 
 		if (picker) {
 			updateDraftField(picker.getAttribute('data-color-picker-input') || '', picker.value);
@@ -3150,6 +3349,20 @@
 			} else {
 				render();
 			}
+			return;
+		}
+
+		if (patternSettingInput && state.modal && state.modal.entityType === 'pattern' && state.modal.draft) {
+			var patternSettingKey = patternSettingInput.getAttribute('data-pattern-setting') || '';
+			state.modal.draft.settings[patternSettingKey] = String(patternSettingInput.value || '');
+			render();
+			return;
+		}
+
+		if (patternColor && state.modal && state.modal.entityType === 'pattern' && state.modal.draft) {
+			var patternColorKey = patternColor.getAttribute('data-pattern-color') || '';
+			state.modal.draft.colors[patternColorKey] = patternColor.value || '';
+			render();
 			return;
 		}
 
