@@ -722,34 +722,34 @@
 	}
 
 	function createApprovedGraphicPatternSection(titleKey, open, children) {
-	  var details = createApprovedGraphicPatternNode('details', 'sonyra-approved-graphic-pattern-section');
+  var details = createApprovedGraphicPatternNode('details', 'sonyra-approved-graphic-pattern-section');
 
-	  if (open) {
-	    details.open = true;
-	    details.setAttribute('open', 'open');
-	  } else {
-	    details.open = false;
-	    details.removeAttribute('open');
-	  }
+  if (open) {
+    details.open = true;
+    details.setAttribute('open', 'open');
+  } else {
+    details.open = false;
+    details.removeAttribute('open');
+  }
 
-	  var summary = createApprovedGraphicPatternNode('summary');
-	  var label = createApprovedGraphicPatternNode('span', '', getApprovedGraphicPatternText(titleKey));
-	  var inner = createApprovedGraphicPatternNode('div', 'sonyra-approved-graphic-pattern-inner');
+  var summary = createApprovedGraphicPatternNode('summary');
+  var label = createApprovedGraphicPatternNode('span', '', getApprovedGraphicPatternText(titleKey));
+  var inner = createApprovedGraphicPatternNode('div', 'sonyra-approved-graphic-pattern-inner');
 
-	  summary.appendChild(label);
-	  summary.appendChild(createApprovedGraphicPatternChevron());
+  summary.appendChild(label);
+  summary.appendChild(createApprovedGraphicPatternChevron());
 
-	  (children || []).forEach(function (child) {
-	    inner.appendChild(child);
-	  });
+  (children || []).forEach(function (child) {
+    inner.appendChild(child);
+  });
 
-	  details.appendChild(summary);
-	  details.appendChild(inner);
+  details.appendChild(summary);
+  details.appendChild(inner);
 
-	  return details;
-	}
+  return details;
+}
 
-	function updateApprovedGraphicPatternRange(range, valueNode) {
+function updateApprovedGraphicPatternRange(range, valueNode) {
 	  var min = Number(range.min || 0);
 	  var max = Number(range.max || 100);
 	  var value = Number(range.value || 0);
@@ -765,44 +765,44 @@
 	}
 
 	function createApprovedGraphicPatternRange(labelKey, min, max, value, suffix, draftKey, onUpdate) {
-	  var draft = getApprovedGraphicPatternDraft();
-	  var currentValue = draftKey && typeof draft[draftKey] !== 'undefined' ? draft[draftKey] : value;
-	  var wrap = createApprovedGraphicPatternNode('div', 'sonyra-approved-graphic-pattern-field');
-	  var head = createApprovedGraphicPatternNode('div', 'sonyra-approved-graphic-pattern-field-head');
-	  var title = createApprovedGraphicPatternNode('span', 'sonyra-approved-graphic-pattern-field-title', getApprovedGraphicPatternText(labelKey));
-	  var valueNode = createApprovedGraphicPatternNode('span', 'sonyra-approved-graphic-pattern-field-value');
-	  var range = document.createElement('input');
+  var draft = getApprovedGraphicPatternDraft();
+  var currentValue = draftKey && typeof draft[draftKey] !== 'undefined' ? draft[draftKey] : value;
+  var wrap = createApprovedGraphicPatternNode('div', 'sonyra-approved-graphic-pattern-field');
+  var head = createApprovedGraphicPatternNode('div', 'sonyra-approved-graphic-pattern-field-head');
+  var title = createApprovedGraphicPatternNode('span', 'sonyra-approved-graphic-pattern-field-title', getApprovedGraphicPatternText(labelKey));
+  var valueNode = createApprovedGraphicPatternNode('span', 'sonyra-approved-graphic-pattern-field-value');
+  var range = document.createElement('input');
 
-	  range.type = 'range';
-	  range.className = 'sonyra-approved-graphic-pattern-range';
-	  range.min = String(min);
-	  range.max = String(max);
-	  range.value = String(currentValue);
-	  range.dataset.suffix = String(suffix || '');
+  range.type = 'range';
+  range.className = 'sonyra-approved-graphic-pattern-range';
+  range.min = String(min);
+  range.max = String(max);
+  range.value = String(currentValue);
+  range.dataset.suffix = String(suffix || '');
 
-	  head.appendChild(title);
-	  head.appendChild(valueNode);
-	  wrap.appendChild(head);
-	  wrap.appendChild(range);
+  head.appendChild(title);
+  head.appendChild(valueNode);
+  wrap.appendChild(head);
+  wrap.appendChild(range);
 
-	  updateApprovedGraphicPatternRange(range, valueNode);
+  updateApprovedGraphicPatternRange(range, valueNode);
 
-	  range.addEventListener('input', function () {
-	    updateApprovedGraphicPatternRange(range, valueNode);
+  range.addEventListener('input', function () {
+    updateApprovedGraphicPatternRange(range, valueNode);
 
-	    if (draftKey) {
-	      setApprovedGraphicPatternDraftValue(draftKey, Number(range.value));
-	    }
+    if (draftKey) {
+      setApprovedGraphicPatternDraftValue(draftKey, Number(range.value));
+    }
 
-	    if (typeof onUpdate === 'function') {
-	      onUpdate();
-	    }
-	  });
+    if (typeof onUpdate === 'function') {
+      onUpdate();
+    }
+  });
 
-	  return wrap;
-	}
+  return wrap;
+}
 
-	function normalizeApprovedGraphicPatternHex(value) {
+function normalizeApprovedGraphicPatternHex(value) {
 	  var hex = String(value || '').trim().toUpperCase();
 
 	  if (hex && hex.charAt(0) !== '#') {
@@ -815,315 +815,352 @@
 	}
 
 	function createApprovedGraphicPatternColorControl(index, initialColor, draftKey, onUpdate) {
-	  var draft = getApprovedGraphicPatternDraft();
-	  var color = normalizeApprovedGraphicPatternHex(draftKey && draft[draftKey] ? draft[draftKey] : initialColor) || '#9A76F8';
-	  var tile = createApprovedGraphicPatternNode('div', 'sonyra-approved-graphic-pattern-color');
-	  var button = document.createElement('button');
-	  var picker = document.createElement('input');
-	  var copy = createApprovedGraphicPatternNode('div', 'sonyra-approved-graphic-pattern-color-copy');
-	  var name = createApprovedGraphicPatternNode(
-	    'div',
-	    'sonyra-approved-graphic-pattern-color-name',
-	    getApprovedGraphicPatternText('manager.design.colors.pattern_color_point') + ' ' + String(index)
-	  );
-	  var input = document.createElement('input');
+  var draft = getApprovedGraphicPatternDraft();
+  var color = normalizeApprovedGraphicPatternHex(draftKey && draft[draftKey] ? draft[draftKey] : initialColor) || '#9A76F8';
+  var tile = createApprovedGraphicPatternNode('div', 'sonyra-approved-graphic-pattern-color');
+  var button = document.createElement('button');
+  var picker = document.createElement('input');
+  var copy = createApprovedGraphicPatternNode('div', 'sonyra-approved-graphic-pattern-color-copy');
+  var name = createApprovedGraphicPatternNode(
+    'div',
+    'sonyra-approved-graphic-pattern-color-name',
+    getApprovedGraphicPatternText('manager.design.colors.pattern_color_point') + ' ' + String(index)
+  );
+  var input = document.createElement('input');
 
-	  if (draftKey) {
-	    setApprovedGraphicPatternDraftValue(draftKey, color);
-	  }
+  if (draftKey) {
+    setApprovedGraphicPatternDraftValue(draftKey, color);
+  }
 
-	  button.type = 'button';
-	  button.className = 'sonyra-approved-graphic-pattern-color-button';
-	  button.style.setProperty('--sonyra-color', color);
+  button.type = 'button';
+  button.className = 'sonyra-approved-graphic-pattern-color-button';
+  button.style.setProperty('--sonyra-color', color);
 
-	  picker.type = 'color';
-	  picker.value = color;
-	  picker.className = 'sonyra-approved-graphic-pattern-hidden-color';
+  picker.type = 'color';
+  picker.value = color;
+  picker.className = 'sonyra-approved-graphic-pattern-hidden-color';
 
-	  input.className = 'sonyra-approved-graphic-pattern-color-input';
-	  input.value = color;
+  input.className = 'sonyra-approved-graphic-pattern-color-input';
+  input.value = color;
 
-	  function applyColor(nextColor) {
-	    var normalized = normalizeApprovedGraphicPatternHex(nextColor);
+  function applyColor(nextColor) {
+    var normalized = normalizeApprovedGraphicPatternHex(nextColor);
 
-	    if (!normalized) {
-	      return;
-	    }
+    if (!normalized) {
+      return;
+    }
 
-	    button.style.setProperty('--sonyra-color', normalized);
-	    picker.value = normalized;
-	    input.value = normalized;
+    button.style.setProperty('--sonyra-color', normalized);
+    picker.value = normalized;
+    input.value = normalized;
 
-	    if (draftKey) {
-	      setApprovedGraphicPatternDraftValue(draftKey, normalized);
-	    }
+    if (draftKey) {
+      setApprovedGraphicPatternDraftValue(draftKey, normalized);
+    }
 
-	    if (typeof onUpdate === 'function') {
-	      onUpdate();
-	    }
-	  }
+    if (typeof onUpdate === 'function') {
+      onUpdate();
+    }
+  }
 
-	  button.addEventListener('click', function () {
-	    picker.click();
-	  });
+  button.addEventListener('click', function () {
+    picker.click();
+  });
 
-	  picker.addEventListener('input', function () {
-	    applyColor(picker.value);
-	  });
+  picker.addEventListener('input', function () {
+    applyColor(picker.value);
+  });
 
-	  input.addEventListener('input', function () {
-	    var normalized = normalizeApprovedGraphicPatternHex(input.value);
+  input.addEventListener('input', function () {
+    var normalized = normalizeApprovedGraphicPatternHex(input.value);
 
-	    if (normalized) {
-	      button.style.setProperty('--sonyra-color', normalized);
-	      picker.value = normalized;
+    if (normalized) {
+      button.style.setProperty('--sonyra-color', normalized);
+      picker.value = normalized;
 
-	      if (draftKey) {
-	        setApprovedGraphicPatternDraftValue(draftKey, normalized);
-	      }
+      if (draftKey) {
+        setApprovedGraphicPatternDraftValue(draftKey, normalized);
+      }
 
-	      if (typeof onUpdate === 'function') {
-	        onUpdate();
-	      }
-	    }
-	  });
+      if (typeof onUpdate === 'function') {
+        onUpdate();
+      }
+    }
+  });
 
-	  input.addEventListener('blur', function () {
-	    applyColor(input.value);
-	  });
+  input.addEventListener('blur', function () {
+    applyColor(input.value);
+  });
 
-	  copy.appendChild(name);
-	  copy.appendChild(input);
-	  tile.appendChild(button);
-	  tile.appendChild(copy);
-	  tile.appendChild(picker);
+  copy.appendChild(name);
+  copy.appendChild(input);
+  tile.appendChild(button);
+  tile.appendChild(copy);
+  tile.appendChild(picker);
 
-	  return tile;
-	}
+  return tile;
+}
 
-	function createApprovedGraphicPatternTypeButton(typeKey, titleKey, hintKey, badgeNode, previewBox) {
-	  var draft = getApprovedGraphicPatternDraft();
-	  var button = document.createElement('button');
-	  var title = createApprovedGraphicPatternNode('strong', '', getApprovedGraphicPatternText(titleKey));
-	  var hint = createApprovedGraphicPatternNode('span', '', getApprovedGraphicPatternText(hintKey));
-	  var activeType = draft.approved_pattern_type || 'dots';
+function createApprovedGraphicPatternTypeButton(typeKey, titleKey, hintKey, badgeNode, previewBox) {
+  var draft = getApprovedGraphicPatternDraft();
+  var button = document.createElement('button');
+  var title = createApprovedGraphicPatternNode('strong', '', getApprovedGraphicPatternText(titleKey));
+  var hint = createApprovedGraphicPatternNode('span', '', getApprovedGraphicPatternText(hintKey));
+  var activeType = draft.pattern_type || draft.approved_pattern_type || 'dots';
 
-	  button.type = 'button';
-	  button.className = 'sonyra-approved-graphic-pattern-type';
-	  button.dataset.approvedPatternType = typeKey;
+  button.type = 'button';
+  button.className = 'sonyra-approved-graphic-pattern-type';
+  button.dataset.approvedPatternType = typeKey;
 
-	  if (typeKey === activeType) {
-	    button.classList.add('is-active');
-	  }
+  if (typeKey === activeType) {
+    button.classList.add('is-active');
+  }
 
-	  button.appendChild(title);
-	  button.appendChild(hint);
+  button.appendChild(title);
+  button.appendChild(hint);
 
-	  button.addEventListener('click', function () {
-	    var siblings = button.parentNode ? Array.from(button.parentNode.querySelectorAll('.sonyra-approved-graphic-pattern-type')) : [];
+  button.addEventListener('click', function () {
+    var siblings = button.parentNode ? Array.from(button.parentNode.querySelectorAll('.sonyra-approved-graphic-pattern-type')) : [];
 
-	    siblings.forEach(function (node) {
-	      node.classList.remove('is-active');
-	    });
+    siblings.forEach(function (node) {
+      node.classList.remove('is-active');
+    });
 
-	    button.classList.add('is-active');
+    button.classList.add('is-active');
 
-	    setApprovedGraphicPatternDraftValue('approved_pattern_type', typeKey);
+    setApprovedGraphicPatternDraftValue('approved_pattern_type', typeKey);
+    setApprovedGraphicPatternDraftValue('pattern_type', typeKey);
 
-	    if (badgeNode) {
-	      badgeNode.textContent = title.textContent;
-	    }
+    if (state.modal) {
+      state.modal.patternType = typeKey;
+    }
 
-	    setApprovedGraphicPatternPreviewBackground(previewBox);
-	  });
+    if (badgeNode) {
+      badgeNode.textContent = title.textContent;
+    }
 
-	  return button;
-	}
+    setApprovedGraphicPatternPreviewBackground(previewBox);
+  });
 
-	function renderApprovedGraphicPatternEditor() {
-	  var draft = getApprovedGraphicPatternDraft();
-	  var editor = createApprovedGraphicPatternNode('div', 'sonyra-approved-graphic-pattern-editor');
-	  var top = createApprovedGraphicPatternNode('div', 'sonyra-approved-graphic-pattern-top');
-	  var previewBox = createApprovedGraphicPatternNode('div', 'sonyra-approved-graphic-pattern-preview-box');
-	  var preview = createApprovedGraphicPatternNode('div', 'sonyra-color-controller__pattern-preview sonyra-approved-graphic-pattern-live-preview');
-	  var previewBadge = createApprovedGraphicPatternNode(
-	    'span',
-	    'sonyra-approved-graphic-pattern-badge sonyra-approved-graphic-pattern-preview-badge',
-	    getApprovedGraphicPatternText('manager.design.colors.pattern_editor_preview_badge')
-	  );
-	  var typeBadge = createApprovedGraphicPatternNode(
-	    'span',
-	    'sonyra-approved-graphic-pattern-badge sonyra-approved-graphic-pattern-type-badge',
-	    getApprovedGraphicPatternText('manager.design.colors.pattern_type_dots')
-	  );
-	  var meta = createApprovedGraphicPatternNode('div', 'sonyra-approved-graphic-pattern-meta');
-	  var metaTitle = createApprovedGraphicPatternNode(
-	    'p',
-	    'sonyra-approved-graphic-pattern-title',
-	    getApprovedGraphicPatternText('manager.design.colors.pattern_editor_settings_title')
-	  );
-	  var nameLabel = createApprovedGraphicPatternNode(
-	    'p',
-	    'sonyra-approved-graphic-pattern-label',
-	    getApprovedGraphicPatternText('manager.design.colors.pattern_editor_name_label')
-	  );
-	  var nameInput = document.createElement('input');
-	  var hint = createApprovedGraphicPatternNode(
-	    'p',
-	    'sonyra-approved-graphic-pattern-hint',
-	    getApprovedGraphicPatternText('manager.design.colors.pattern_editor_hint')
-	  );
-	  var scroll = createApprovedGraphicPatternNode('div', 'sonyra-approved-graphic-pattern-scroll');
-	  var types = createApprovedGraphicPatternNode('div', 'sonyra-approved-graphic-pattern-types');
-	  var dotSettings = createApprovedGraphicPatternNode('div', 'sonyra-approved-graphic-pattern-grid-2');
-	  var colorsWrap = createApprovedGraphicPatternNode('div', 'sonyra-approved-graphic-pattern-colors-wrap');
-	  var colors = createApprovedGraphicPatternNode('div', 'sonyra-approved-graphic-pattern-colors');
-	  var layers = createApprovedGraphicPatternNode('div', 'sonyra-approved-graphic-pattern-layers');
-	  var effects = createApprovedGraphicPatternNode('div', 'sonyra-approved-graphic-pattern-effects');
-	  var random = createApprovedGraphicPatternNode('div', 'sonyra-approved-graphic-pattern-toggle');
-	  var randomLabel = createApprovedGraphicPatternNode('span', '', getApprovedGraphicPatternText('manager.design.colors.pattern_random_offset'));
-	  var randomSwitch = createApprovedGraphicPatternNode('span', 'sonyra-approved-graphic-pattern-switch');
-	  var edge = createApprovedGraphicPatternNode('div', 'sonyra-approved-graphic-pattern-edge');
-	  var edgeLabel = createApprovedGraphicPatternNode('span', '', getApprovedGraphicPatternText('manager.design.colors.pattern_edge'));
-	  var segmented = createApprovedGraphicPatternNode('span', 'sonyra-approved-graphic-pattern-segmented');
+  return button;
+}
 
-	  ensureApprovedGraphicPatternStyle();
+function renderApprovedGraphicPatternEditor() {
+  var draft = getApprovedGraphicPatternDraft();
+  var editor = createApprovedGraphicPatternNode('div', 'sonyra-approved-graphic-pattern-editor');
+  var top = createApprovedGraphicPatternNode('div', 'sonyra-approved-graphic-pattern-top');
+  var previewBox = createApprovedGraphicPatternNode('div', 'sonyra-approved-graphic-pattern-preview-box');
+  var preview = createApprovedGraphicPatternNode('div', 'sonyra-color-controller__pattern-preview sonyra-approved-graphic-pattern-live-preview');
+  var previewBadge = createApprovedGraphicPatternNode(
+    'span',
+    'sonyra-approved-graphic-pattern-badge sonyra-approved-graphic-pattern-preview-badge',
+    getApprovedGraphicPatternText('manager.design.colors.pattern_editor_preview_badge')
+  );
+  var typeBadge = createApprovedGraphicPatternNode(
+    'span',
+    'sonyra-approved-graphic-pattern-badge sonyra-approved-graphic-pattern-type-badge',
+    getApprovedGraphicPatternText('manager.design.colors.pattern_type_dots')
+  );
+  var meta = createApprovedGraphicPatternNode('div', 'sonyra-approved-graphic-pattern-meta');
+  var metaTitle = createApprovedGraphicPatternNode(
+    'p',
+    'sonyra-approved-graphic-pattern-title',
+    getApprovedGraphicPatternText('manager.design.colors.pattern_editor_settings_title')
+  );
+  var nameLabel = createApprovedGraphicPatternNode(
+    'p',
+    'sonyra-approved-graphic-pattern-label',
+    getApprovedGraphicPatternText('manager.design.colors.pattern_editor_name_label')
+  );
+  var nameInput = document.createElement('input');
+  var hint = createApprovedGraphicPatternNode(
+    'p',
+    'sonyra-approved-graphic-pattern-hint',
+    getApprovedGraphicPatternText('manager.design.colors.pattern_editor_hint')
+  );
+  var scroll = createApprovedGraphicPatternNode('div', 'sonyra-approved-graphic-pattern-scroll');
+  var types = createApprovedGraphicPatternNode('div', 'sonyra-approved-graphic-pattern-types');
+  var dotSettings = createApprovedGraphicPatternNode('div', 'sonyra-approved-graphic-pattern-grid-2');
+  var colorsWrap = createApprovedGraphicPatternNode('div', 'sonyra-approved-graphic-pattern-colors-wrap');
+  var colors = createApprovedGraphicPatternNode('div', 'sonyra-approved-graphic-pattern-colors');
+  var layers = createApprovedGraphicPatternNode('div', 'sonyra-approved-graphic-pattern-layers');
+  var effects = createApprovedGraphicPatternNode('div', 'sonyra-approved-graphic-pattern-effects');
+  var random = createApprovedGraphicPatternNode('button', 'sonyra-approved-graphic-pattern-toggle');
+  var randomLabel = createApprovedGraphicPatternNode('span', '', getApprovedGraphicPatternText('manager.design.colors.pattern_random_offset'));
+  var randomSwitch = createApprovedGraphicPatternNode('span', 'sonyra-approved-graphic-pattern-switch');
+  var edge = createApprovedGraphicPatternNode('div', 'sonyra-approved-graphic-pattern-edge');
+  var edgeLabel = createApprovedGraphicPatternNode('span', '', getApprovedGraphicPatternText('manager.design.colors.pattern_edge'));
+  var segmented = createApprovedGraphicPatternNode('span', 'sonyra-approved-graphic-pattern-segmented');
 
-	  if (!draft.approved_pattern_type) {
-	    setApprovedGraphicPatternDraftValue('approved_pattern_type', 'dots');
-	  }
+  ensureApprovedGraphicPatternStyle();
 
-	  if (typeof draft.dot_size === 'undefined') {
-	    setApprovedGraphicPatternDraftValue('dot_size', 12);
-	  }
+  if (!draft.pattern_type || draft.pattern_type === 'image_pattern') {
+    setApprovedGraphicPatternDraftValue('pattern_type', 'dots');
+  }
 
-	  if (typeof draft.dot_spacing === 'undefined') {
-	    setApprovedGraphicPatternDraftValue('dot_spacing', 28);
-	  }
+  if (!draft.approved_pattern_type) {
+    setApprovedGraphicPatternDraftValue('approved_pattern_type', draft.pattern_type || 'dots');
+  }
 
-	  if (typeof draft.layers_count === 'undefined') {
-	    setApprovedGraphicPatternDraftValue('layers_count', 2);
-	  }
+  if (typeof draft.dot_size === 'undefined') {
+    setApprovedGraphicPatternDraftValue('dot_size', 12);
+  }
 
-	  if (typeof draft.layer_offset === 'undefined') {
-	    setApprovedGraphicPatternDraftValue('layer_offset', 14);
-	  }
+  if (typeof draft.dot_spacing === 'undefined') {
+    setApprovedGraphicPatternDraftValue('dot_spacing', 28);
+  }
 
-	  if (typeof draft.opacity === 'undefined') {
-	    setApprovedGraphicPatternDraftValue('opacity', 86);
-	  }
+  if (typeof draft.layers_count === 'undefined') {
+    setApprovedGraphicPatternDraftValue('layers_count', 2);
+  }
 
-	  nameInput.className = 'sonyra-approved-graphic-pattern-name';
-	  nameInput.value = String(draft.name || '');
-	  nameInput.placeholder = getApprovedGraphicPatternText('manager.design.colors.pattern_name_placeholder');
-	  nameInput.addEventListener('input', function () {
-	    setApprovedGraphicPatternDraftValue('name', nameInput.value);
-	  });
+  if (typeof draft.layer_offset === 'undefined') {
+    setApprovedGraphicPatternDraftValue('layer_offset', 14);
+  }
 
-	  previewBox.appendChild(preview);
-	  previewBox.appendChild(previewBadge);
-	  previewBox.appendChild(typeBadge);
+  if (typeof draft.opacity === 'undefined') {
+    setApprovedGraphicPatternDraftValue('opacity', 86);
+  }
 
-	  meta.appendChild(metaTitle);
-	  meta.appendChild(nameLabel);
-	  meta.appendChild(nameInput);
-	  meta.appendChild(hint);
+  if (typeof draft.random_offset === 'undefined') {
+    setApprovedGraphicPatternDraftValue('random_offset', false);
+  }
 
-	  top.appendChild(previewBox);
-	  top.appendChild(meta);
+  if (!draft.edge_mode) {
+    setApprovedGraphicPatternDraftValue('edge_mode', 'soft');
+  }
 
-	  [
-	    ['dots', 'manager.design.colors.pattern_type_dots', 'manager.design.colors.pattern_type_dots_hint'],
-	    ['grid', 'manager.design.colors.pattern_type_grid', 'manager.design.colors.pattern_type_grid_hint'],
-	    ['waves', 'manager.design.colors.pattern_type_waves', 'manager.design.colors.pattern_type_waves_hint'],
-	    ['lines', 'manager.design.colors.pattern_type_lines', 'manager.design.colors.pattern_type_lines_hint'],
-	    ['paint', 'manager.design.colors.pattern_type_paint', 'manager.design.colors.pattern_type_paint_hint'],
-	    ['shapes', 'manager.design.colors.pattern_type_shapes', 'manager.design.colors.pattern_type_shapes_hint']
-	  ].forEach(function (item) {
-	    types.appendChild(createApprovedGraphicPatternTypeButton(item[0], item[1], item[2], typeBadge, previewBox));
-	  });
+  nameInput.className = 'sonyra-approved-graphic-pattern-name';
+  nameInput.value = String(draft.name || '');
+  nameInput.placeholder = getApprovedGraphicPatternText('manager.design.colors.pattern_name_placeholder');
+  nameInput.addEventListener('input', function () {
+    setApprovedGraphicPatternDraftValue('name', nameInput.value);
+  });
 
-	  dotSettings.appendChild(createApprovedGraphicPatternRange('manager.design.colors.pattern_dot_size', 4, 40, draft.dot_size || 12, 'px', 'dot_size', function () {
-	    setApprovedGraphicPatternPreviewBackground(previewBox);
-	  }));
-	  dotSettings.appendChild(createApprovedGraphicPatternRange('manager.design.colors.pattern_dot_spacing', 8, 80, draft.dot_spacing || 28, 'px', 'dot_spacing', function () {
-	    setApprovedGraphicPatternPreviewBackground(previewBox);
-	  }));
+  previewBox.appendChild(preview);
+  previewBox.appendChild(previewBadge);
+  previewBox.appendChild(typeBadge);
 
-	  colors.appendChild(createApprovedGraphicPatternColorControl(1, draft.color_one || '#9A76F8', 'color_one', function () {
-	    setApprovedGraphicPatternPreviewBackground(previewBox);
-	  }));
-	  colors.appendChild(createApprovedGraphicPatternColorControl(2, draft.color_two || '#FF93C8', 'color_two', function () {
-	    setApprovedGraphicPatternPreviewBackground(previewBox);
-	  }));
+  meta.appendChild(metaTitle);
+  meta.appendChild(nameLabel);
+  meta.appendChild(nameInput);
+  meta.appendChild(hint);
 
-	  layers.appendChild(createApprovedGraphicPatternRange('manager.design.colors.pattern_layers_count', 1, 5, draft.layers_count || 2, '', 'layers_count', function () {
-	    setApprovedGraphicPatternPreviewBackground(previewBox);
-	  }));
-	  layers.appendChild(createApprovedGraphicPatternRange('manager.design.colors.pattern_layer_offset', 0, 40, draft.layer_offset || 14, 'px', 'layer_offset', function () {
-	    setApprovedGraphicPatternPreviewBackground(previewBox);
-	  }));
+  top.appendChild(previewBox);
+  top.appendChild(meta);
 
-	  colorsWrap.appendChild(colors);
-	  colorsWrap.appendChild(layers);
+  [
+    ['dots', 'manager.design.colors.pattern_type_dots', 'manager.design.colors.pattern_type_dots_hint'],
+    ['grid', 'manager.design.colors.pattern_type_grid', 'manager.design.colors.pattern_type_grid_hint'],
+    ['waves', 'manager.design.colors.pattern_type_waves', 'manager.design.colors.pattern_type_waves_hint'],
+    ['lines', 'manager.design.colors.pattern_type_lines', 'manager.design.colors.pattern_type_lines_hint'],
+    ['paint', 'manager.design.colors.pattern_type_paint', 'manager.design.colors.pattern_type_paint_hint'],
+    ['shapes', 'manager.design.colors.pattern_type_shapes', 'manager.design.colors.pattern_type_shapes_hint']
+  ].forEach(function (item) {
+    types.appendChild(createApprovedGraphicPatternTypeButton(item[0], item[1], item[2], typeBadge, previewBox));
+  });
 
-	  effects.appendChild(createApprovedGraphicPatternRange('manager.design.colors.pattern_opacity', 0, 100, draft.opacity || 86, '%', 'opacity', function () {
-	    setApprovedGraphicPatternPreviewBackground(previewBox);
-	  }));
+  dotSettings.appendChild(createApprovedGraphicPatternRange('manager.design.colors.pattern_dot_size', 4, 40, draft.dot_size || 12, 'px', 'dot_size', function () {
+    setApprovedGraphicPatternPreviewBackground(previewBox);
+  }));
+  dotSettings.appendChild(createApprovedGraphicPatternRange('manager.design.colors.pattern_dot_spacing', 8, 80, draft.dot_spacing || 28, 'px', 'dot_spacing', function () {
+    setApprovedGraphicPatternPreviewBackground(previewBox);
+  }));
 
-	  random.appendChild(randomLabel);
-	  random.appendChild(randomSwitch);
+  colors.appendChild(createApprovedGraphicPatternColorControl(1, draft.color_one || '#9A76F8', 'color_one', function () {
+    setApprovedGraphicPatternPreviewBackground(previewBox);
+  }));
+  colors.appendChild(createApprovedGraphicPatternColorControl(2, draft.color_two || '#FF93C8', 'color_two', function () {
+    setApprovedGraphicPatternPreviewBackground(previewBox);
+  }));
 
-	  segmented.innerHTML = '<button type="button" class="is-active">' + getApprovedGraphicPatternText('manager.design.colors.pattern_edge_soft') + '</button><button type="button">' + getApprovedGraphicPatternText('manager.design.colors.pattern_edge_sharp') + '</button>';
+  layers.appendChild(createApprovedGraphicPatternRange('manager.design.colors.pattern_layers_count', 1, 5, draft.layers_count || 2, '', 'layers_count', function () {
+    setApprovedGraphicPatternPreviewBackground(previewBox);
+  }));
+  layers.appendChild(createApprovedGraphicPatternRange('manager.design.colors.pattern_layer_offset', 0, 40, draft.layer_offset || 14, 'px', 'layer_offset', function () {
+    setApprovedGraphicPatternPreviewBackground(previewBox);
+  }));
 
-	  edge.appendChild(edgeLabel);
-	  edge.appendChild(segmented);
+  colorsWrap.appendChild(colors);
+  colorsWrap.appendChild(layers);
 
-	  effects.appendChild(random);
-	  effects.appendChild(edge);
+  effects.appendChild(createApprovedGraphicPatternRange('manager.design.colors.pattern_opacity', 0, 100, draft.opacity || 86, '%', 'opacity', function () {
+    setApprovedGraphicPatternPreviewBackground(previewBox);
+  }));
 
-	  scroll.appendChild(createApprovedGraphicPatternSection('manager.design.colors.pattern_editor_type_section', true, [types]));
-	  scroll.appendChild(createApprovedGraphicPatternSection('manager.design.colors.pattern_editor_dot_settings_section', false, [dotSettings]));
-	  scroll.appendChild(createApprovedGraphicPatternSection('manager.design.colors.pattern_editor_layers_colors_section', false, [colorsWrap]));
-	  scroll.appendChild(createApprovedGraphicPatternSection('manager.design.colors.pattern_editor_effects_section', false, [effects]));
+  random.type = 'button';
+  random.appendChild(randomLabel);
+  random.appendChild(randomSwitch);
+  random.addEventListener('click', function () {
+    var next = !(getApprovedGraphicPatternDraft().random_offset === true);
 
-	  editor.appendChild(top);
-	  editor.appendChild(scroll);
+    setApprovedGraphicPatternDraftValue('random_offset', next);
+    random.classList.toggle('is-active', next);
+    setApprovedGraphicPatternPreviewBackground(previewBox);
+  });
 
-	  setApprovedGraphicPatternPreviewBackground(previewBox);
+  segmented.innerHTML = '<button type="button" class="is-active" data-approved-edge="soft">' + getApprovedGraphicPatternText('manager.design.colors.pattern_edge_soft') + '</button><button type="button" data-approved-edge="sharp">' + getApprovedGraphicPatternText('manager.design.colors.pattern_edge_sharp') + '</button>';
 
-	  return editor;
-	}
+  Array.from(segmented.querySelectorAll('button')).forEach(function (button) {
+    button.addEventListener('click', function () {
+      Array.from(segmented.querySelectorAll('button')).forEach(function (node) {
+        node.classList.remove('is-active');
+      });
 
-	function moveApprovedGraphicPatternBackButton(modalFooter) {
-	  var existingBack = document.querySelector('.sonyra-approved-graphic-pattern-footer-back');
+      button.classList.add('is-active');
+      setApprovedGraphicPatternDraftValue('edge_mode', String(button.getAttribute('data-approved-edge') || 'soft'));
+      setApprovedGraphicPatternPreviewBackground(previewBox);
+    });
+  });
 
-	  if (!modalFooter) {
-	    return;
-	  }
+  edge.appendChild(edgeLabel);
+  edge.appendChild(segmented);
 
-	  if (!existingBack) {
-	    existingBack = document.createElement('button');
-	    existingBack.type = 'button';
-	    existingBack.className = 'sonyra-approved-graphic-pattern-footer-back sonyra-color-controller__pattern-back-button';
-	  }
+  effects.appendChild(random);
+  effects.appendChild(edge);
 
-	  existingBack.textContent = getApprovedGraphicPatternText('manager.design.colors.pattern_back_to_type');
+  scroll.appendChild(createApprovedGraphicPatternSection('manager.design.colors.pattern_editor_type_section', true, [types]));
+  scroll.appendChild(createApprovedGraphicPatternSection('manager.design.colors.pattern_editor_dot_settings_section', false, [dotSettings]));
+  scroll.appendChild(createApprovedGraphicPatternSection('manager.design.colors.pattern_editor_layers_colors_section', false, [colorsWrap]));
+  scroll.appendChild(createApprovedGraphicPatternSection('manager.design.colors.pattern_editor_effects_section', false, [effects]));
 
-	  existingBack.addEventListener('click', function () {
-	    if (!state.modal) {
-	      return;
-	    }
+  editor.appendChild(top);
+  editor.appendChild(scroll);
 
-	    state.modal.patternSourceSelected = false;
-	    state.modal.patternType = '';
-	    rerenderActiveModal();
-	  });
+  setApprovedGraphicPatternPreviewBackground(previewBox);
 
-	  modalFooter.insertBefore(existingBack, modalFooter.firstChild);
-	}
+  return editor;
+}
 
-	function getColorControllerModalCopy(modal) {
+function moveApprovedGraphicPatternBackButton(modalFooter) {
+  var existingBack = document.querySelector('.sonyra-approved-graphic-pattern-footer-back');
+
+  if (!modalFooter) {
+    return;
+  }
+
+  if (!existingBack) {
+    existingBack = document.createElement('button');
+    existingBack.type = 'button';
+    existingBack.className = 'sonyra-approved-graphic-pattern-footer-back sonyra-color-controller__pattern-back-button';
+  }
+
+  existingBack.textContent = getApprovedGraphicPatternText('manager.design.colors.pattern_back_to_type');
+
+  existingBack.onclick = function () {
+    if (!state.modal) {
+      return;
+    }
+
+    state.modal.patternSourceSelected = false;
+    state.modal.patternType = '';
+    rerenderActiveModal();
+  };
+
+  modalFooter.insertBefore(existingBack, modalFooter.firstChild);
+}
+
+function getColorControllerModalCopy(modal) {
 		var type = modal && modal.entityType ? String(modal.entityType) : (modal && modal.type ? String(modal.type) : '');
 		var mode = modal && modal.mode ? String(modal.mode) : 'create';
 		var draftPatternType = modal && modal.draft && modal.draft.pattern_type ? String(modal.draft.pattern_type) : '';
