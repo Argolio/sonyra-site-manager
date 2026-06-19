@@ -2142,23 +2142,6 @@
 		var wrap = document.createElement('div');
 		wrap.className = 'sonyra-color-controller__pattern-source-choice';
 		wrap.setAttribute('data-pattern-source-choice-screen', 'true');
-		var intro = document.createElement('div');
-		intro.className = 'sonyra-color-controller__pattern-source-choice-intro';
-		var introTitle = document.createElement('h3');
-		introTitle.className = 'sonyra-color-controller__pattern-source-choice-title';
-		introTitle.textContent = getSonyraSourceText(
-			'manager.design.colors.pattern_source_title',
-			'Какой паттерн создать'
-		);
-		var introDescription = document.createElement('p');
-		introDescription.className = 'sonyra-color-controller__pattern-source-choice-description';
-		introDescription.textContent = getSonyraSourceText(
-			'manager.design.colors.pattern_source_description',
-			'Выберите способ создания паттерна для библиотеки сайта'
-		);
-		intro.appendChild(introTitle);
-		intro.appendChild(introDescription);
-		wrap.appendChild(intro);
 		var grid = document.createElement('div');
 		grid.className = 'sonyra-color-controller__pattern-source-choice-grid';
 		grid.appendChild(buildPatternSourceChoiceCard({
@@ -2166,18 +2149,14 @@
 			titleKey: 'manager.design.colors.pattern_source_graphic_title',
 			titleFallback: 'Графический паттерн',
 			descriptionKey: 'manager.design.colors.pattern_source_graphic_description',
-			descriptionFallback: 'Создайте узор из точек, линий, сетки, кругов и других графических элементов',
-			actionKey: 'manager.design.colors.pattern_source_choose_graphic',
-			actionFallback: 'Выбрать графический паттерн'
+			descriptionFallback: 'Создайте узор из точек, линий, сетки и других графических элементов'
 		}));
 		grid.appendChild(buildPatternSourceChoiceCard({
 			kind: 'image',
 			titleKey: 'manager.design.colors.pattern_source_image_title',
 			titleFallback: 'Изображение как паттерн',
 			descriptionKey: 'manager.design.colors.pattern_source_image_description',
-			descriptionFallback: 'Используйте изображение как повторяемый фон и настройте его отображение',
-			actionKey: 'manager.design.colors.pattern_source_choose_image',
-			actionFallback: 'Выбрать изображение'
+			descriptionFallback: 'Используйте изображение как повторяемый фон'
 		}));
 		wrap.appendChild(grid);
 		assertPatternSourceChoiceDom(wrap);
@@ -2191,11 +2170,13 @@
 		button.setAttribute('data-pattern-source-choice', config.kind);
 		var titleText = getSonyraSourceText(config.titleKey, config.titleFallback);
 		var descriptionText = getSonyraSourceText(config.descriptionKey, config.descriptionFallback);
-		var actionText = getSonyraSourceText(config.actionKey, config.actionFallback);
 		button.setAttribute('aria-label', titleText);
 		var icon = document.createElement('span');
 		icon.className = 'sonyra-color-controller__pattern-source-card-icon';
 		icon.setAttribute('aria-hidden', 'true');
+		if (config.kind === 'image') {
+			icon.className += ' sonyra-color-controller__pattern-source-card-icon-image';
+		}
 		var copy = document.createElement('span');
 		copy.className = 'sonyra-color-controller__pattern-source-card-copy';
 		var title = document.createElement('strong');
@@ -2204,12 +2185,8 @@
 		var description = document.createElement('span');
 		description.className = 'sonyra-color-controller__pattern-source-card-description';
 		description.textContent = descriptionText;
-		var action = document.createElement('span');
-		action.className = 'sonyra-color-controller__pattern-source-card-action';
-		action.textContent = actionText;
 		copy.appendChild(title);
 		copy.appendChild(description);
-		copy.appendChild(action);
 		button.appendChild(icon);
 		button.appendChild(copy);
 		button.addEventListener('click', function () {
@@ -2219,18 +2196,29 @@
 	}
 
 	function assertPatternSourceChoiceDom(root) {
+		var actionSelector = '.sonyra-color-controller__pattern-source-card' + '-action';
+		var bodyTitleSelector = '.sonyra-color-controller__pattern-source-choice' + '-title';
+		var bodyDescriptionSelector = '.sonyra-color-controller__pattern-source-choice' + '-description';
 		if (!root) {
 			throw new Error('SONYRA pattern source choice missing root');
 		}
 		var cards = root.querySelectorAll('[data-pattern-source-choice]');
 		var titles = root.querySelectorAll('.sonyra-color-controller__pattern-source-card-title');
 		var descriptions = root.querySelectorAll('.sonyra-color-controller__pattern-source-card-description');
-		var actions = root.querySelectorAll('.sonyra-color-controller__pattern-source-card-action');
+		var actions = root.querySelectorAll(actionSelector);
+		var bodyTitles = root.querySelectorAll(bodyTitleSelector);
+		var bodyDescriptions = root.querySelectorAll(bodyDescriptionSelector);
 		if (cards.length !== 2) {
 			throw new Error('SONYRA pattern source choice must render exactly 2 cards');
 		}
-		if (titles.length !== 2 || descriptions.length !== 2 || actions.length !== 2) {
-			throw new Error('SONYRA pattern source choice visible text nodes missing');
+		if (titles.length !== 2 || descriptions.length !== 2) {
+			throw new Error('SONYRA pattern source choice visible title/description nodes missing');
+		}
+		if (actions.length !== 0) {
+			throw new Error('SONYRA pattern source choice action nodes are forbidden');
+		}
+		if (bodyTitles.length !== 0 || bodyDescriptions.length !== 0) {
+			throw new Error('SONYRA pattern source choice body title/description are forbidden');
 		}
 		Array.prototype.forEach.call(titles, function (node) {
 			if (!node.textContent || !node.textContent.trim()) {
@@ -2240,11 +2228,6 @@
 		Array.prototype.forEach.call(descriptions, function (node) {
 			if (!node.textContent || !node.textContent.trim()) {
 				throw new Error('SONYRA pattern source choice card description is empty');
-			}
-		});
-		Array.prototype.forEach.call(actions, function (node) {
-			if (!node.textContent || !node.textContent.trim()) {
-				throw new Error('SONYRA pattern source choice card action is empty');
 			}
 		});
 	}
