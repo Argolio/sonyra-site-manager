@@ -2671,11 +2671,15 @@
 		var modalCopy = getColorControllerModalCopy(state.modal);
 
 		if (!modalCopy.titleText) {
-			throw new Error('SONYRA Color Library modal titleText is empty');
+			if (window && window.console && typeof window.console.error === 'function') {
+				window.console.error('SONYRA Color Library modal titleText is empty:', modalCopy.titleKey || '');
+			}
 		}
 
 		if (!modalCopy.descriptionText) {
-			throw new Error('SONYRA Color Library modal descriptionText is empty');
+			if (window && window.console && typeof window.console.error === 'function') {
+				window.console.error('SONYRA Color Library modal descriptionText is empty:', modalCopy.descriptionKey || '');
+			}
 		}
 
 		var chrome = getManagerUi().renderStandardModal({

@@ -991,10 +991,41 @@ class Sonyra_Site_Manager_Color_Controller {
 			'fallbackLocale' => 'ru_RU',
 			'dictionary'     => array(),
 		);
-		$dictionary = array();
+		$dictionary = isset( $payload['dictionary'] ) && is_array( $payload['dictionary'] ) ? $payload['dictionary'] : array();
+		$required_dictionary_keys = array(
+			'manager.design.colors.pattern_source_modal_title',
+			'manager.design.colors.pattern_source_modal_description',
+			'manager.design.colors.pattern_source_graphic_title',
+			'manager.design.colors.pattern_source_graphic_description',
+			'manager.design.colors.pattern_source_image_title',
+			'manager.design.colors.pattern_source_image_description',
+			'manager.design.colors.title_create_color',
+			'manager.design.colors.title_edit_color',
+			'manager.design.colors.title_create_gradient',
+			'manager.design.colors.title_edit_gradient',
+			'manager.design.colors.title_create_pattern_graphic',
+			'manager.design.colors.title_edit_pattern_graphic',
+			'manager.design.colors.title_create_pattern_image',
+			'manager.design.colors.title_edit_pattern_image',
+			'manager.design.colors.modal_color_create_description',
+			'manager.design.colors.modal_color_edit_description',
+			'manager.design.colors.modal_gradient_create_description',
+			'manager.design.colors.modal_gradient_edit_description',
+			'manager.design.colors.modal_pattern_graphic_description',
+			'manager.design.colors.modal_pattern_image_description',
+			'manager.design.colors.create_color',
+			'manager.design.colors.create_gradient',
+			'manager.design.colors.create_pattern',
+		);
 
 		foreach ( self::get_i18n_keys() as $key ) {
 			$dictionary[ $key ] = self::text( $key );
+		}
+
+		foreach ( $required_dictionary_keys as $key ) {
+			if ( empty( $dictionary[ $key ] ) || $dictionary[ $key ] === $key ) {
+				$dictionary[ $key ] = self::text( $key );
+			}
 		}
 
 		$payload['dictionary'] = $dictionary;
