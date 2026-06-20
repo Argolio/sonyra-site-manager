@@ -1246,6 +1246,18 @@ function getColorControllerModalCopy(modal) {
 		var titleKey = '';
 		var descriptionKey = '';
 
+		if (type === 'pattern_coming_soon') {
+			titleKey = 'manager.design.colors.pattern_coming_soon_title';
+			descriptionKey = 'manager.design.colors.pattern_coming_soon_hint';
+
+			return {
+				titleKey: titleKey,
+				descriptionKey: descriptionKey,
+				titleText: resolveModalText(titleKey),
+				descriptionText: resolveModalText(descriptionKey)
+			};
+		}
+
 		if (type === 'pattern' && !isEdit && modal && modal.patternSourceSelected !== true) {
 			titleKey = 'manager.design.colors.pattern_source_modal_title';
 			descriptionKey = 'manager.design.colors.pattern_source_modal_description';
@@ -3509,21 +3521,22 @@ function buildPatternGroupBody(modal, definition, group) {
 		var title = chrome.title;
 		var description = chrome.description;
 		var body = chrome.body;
-
-  if (state.modal && state.modal.type === 'pattern_coming_soon') {
-    body.appendChild(renderPatternComingSoonNotice());
-    if (footer && footer.parentNode) {
-      footer.parentNode.removeChild(footer);
-    }
-    modal.classList.add('sonyra-color-controller__modal--pattern-coming-soon');
-  }
 		var footer = chrome.footer;
 		var cancel = createButton('sonyra-manager-pages-secondary', t('manager.pages.actions.cancel'));
 		var save = createButton('sonyra-manager-pages-primary', state.modal.loading ? t('manager.pages.actions.saving') : t('manager.pages.actions.save'));
+		var isPatternComingSoon = state.modal && state.modal.type === 'pattern_coming_soon';
 
 		overlay.setAttribute('data-color-modal-overlay', 'true');
 		body.setAttribute('data-color-modal-scroll', 'true');
-		if (state.modal.entityType === 'pattern') {
+		if (isPatternComingSoon) {
+			overlay.classList.add('sonyra-color-controller__modal-overlay');
+			chrome.panel.classList.add('sonyra-color-controller__modal-panel', 'sonyra-color-controller__modal-panel-pattern', 'sonyra-color-controller__modal--pattern-coming-soon');
+			body.classList.add('sonyra-color-controller__modal-body', 'sonyra-color-controller__modal-body-pattern');
+			body.appendChild(renderPatternComingSoonNotice());
+			if (footer && footer.parentNode) {
+				footer.parentNode.removeChild(footer);
+			}
+		} else if (state.modal.entityType === 'pattern') {
 			overlay.classList.add('sonyra-color-controller__modal-overlay');
 			chrome.panel.classList.add('sonyra-color-controller__modal-panel', 'sonyra-color-controller__modal-panel-pattern');
 			body.classList.add('sonyra-color-controller__modal-body', 'sonyra-color-controller__modal-body-pattern');
@@ -3533,19 +3546,23 @@ function buildPatternGroupBody(modal, definition, group) {
 			chrome.panel.classList.add('sonyra-color-controller__modal-panel');
 			body.classList.add('sonyra-color-controller__modal-body');
 		}
-		if (shouldUseApprovedGraphicPatternLayout()) {
+		if (isPatternComingSoon) {
+			/* no editor body for coming soon modal */
+		} else if (shouldUseApprovedGraphicPatternLayout()) {
 			body.appendChild(renderApprovedGraphicPatternEditor());
 		} else {
 			body.appendChild(buildModalBody());
 		}
-		cancel.setAttribute('data-color-close-modal', 'true');
-		footer.appendChild(cancel);
-		save.setAttribute('data-color-save-modal', 'true');
-		if (state.modal.loading || (state.modal.entityType === 'pattern' && getPatternFlowStep(state.modal) === 'source-choice')) {
-			save.disabled = true;
+		if (!isPatternComingSoon) {
+			cancel.setAttribute('data-color-close-modal', 'true');
+			footer.appendChild(cancel);
+			save.setAttribute('data-color-save-modal', 'true');
+			if (state.modal.loading || (state.modal.entityType === 'pattern' && getPatternFlowStep(state.modal) === 'source-choice')) {
+				save.disabled = true;
+			}
+			footer.appendChild(save);
 		}
-		footer.appendChild(save);
-		if (shouldUseApprovedGraphicPatternLayout()) {
+		if (!isPatternComingSoon && shouldUseApprovedGraphicPatternLayout()) {
 			moveApprovedGraphicPatternBackButton(footer);
 		}
 		assertColorControllerModalDom(overlay, state.modal);
@@ -4166,6 +4183,11 @@ function buildPatternGroupBody(modal, definition, group) {
 
 		if (create) {
 			event.preventDefault();
+			if (String(create.getAttribute('data-color-create') || getCurrentEntityType()) === 'patterns') {
+				openPatternComingSoonModal();
+				render();
+				return;
+			}
 			openColorLibraryFormModal(String(create.getAttribute('data-color-create') || getCurrentEntityType()), 'create', null);
 			return;
 		}
