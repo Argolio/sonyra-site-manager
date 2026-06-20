@@ -648,8 +648,15 @@
 	    '.sonyra-approved-graphic-pattern-segmented button{appearance:none!important;border:0!important;background:transparent!important;height:30px!important;padding:0 12px!important;border-radius:999px!important;color:#4c5870!important;font-size:12px!important;font-weight:800!important;box-shadow:none!important;cursor:pointer!important;}',
 	    '.sonyra-approved-graphic-pattern-segmented button.is-active{background:#fff!important;color:#5148f2!important;}',
 	    '.sonyra-approved-graphic-pattern-footer-back{order:-10!important;margin-right:auto!important;min-height:44px!important;border-radius:15px!important;border:1px solid rgba(200,210,242,.95)!important;background:#fff!important;color:#5148f2!important;box-shadow:none!important;font-weight:850!important;padding:0 16px!important;}',
+	    '.sonyra-color-controller__modal--pattern-coming-soon .sonyra-color-controller__pattern-coming-soon{padding:8px 0 4px;}',
+	    '.sonyra-color-controller__modal--pattern-coming-soon .sonyra-color-controller__pattern-coming-soon-card{border:1px solid rgba(148,163,184,.24);border-radius:24px;background:linear-gradient(135deg,rgba(255,255,255,.96),rgba(248,250,252,.92));padding:28px;box-shadow:0 18px 48px rgba(15,23,42,.10);}',
+	    '.sonyra-color-controller__pattern-coming-soon-status{display:inline-flex!important;align-items:center!important;min-height:28px!important;padding:0 12px!important;border-radius:999px!important;background:rgba(154,118,248,.10)!important;color:#6D4FD8!important;font-size:12px!important;font-weight:700!important;letter-spacing:.04em!important;text-transform:uppercase!important;}',
+	    '.sonyra-color-controller__pattern-coming-soon-title{margin:18px 0 0!important;max-width:520px!important;color:#111827!important;font-size:28px!important;line-height:1.08!important;font-weight:800!important;letter-spacing:-.04em!important;}',
+	    '.sonyra-color-controller__pattern-coming-soon-text{margin:14px 0 0!important;max-width:620px!important;color:#475569!important;font-size:15px!important;line-height:1.6!important;font-weight:500!important;}',
+	    '.sonyra-color-controller__pattern-coming-soon-hint{margin:12px 0 0!important;max-width:620px!important;color:#64748B!important;font-size:14px!important;line-height:1.55!important;font-weight:500!important;}',
 	    '@media (max-width:1040px){.sonyra-approved-graphic-pattern-types{grid-template-columns:repeat(3,minmax(0,1fr))!important;}.sonyra-approved-graphic-pattern-effects{grid-template-columns:1fr!important;}}',
-	    '@media (max-width:760px){.sonyra-color-controller__modal-body-pattern{padding:0 20px!important;}.sonyra-approved-graphic-pattern-top,.sonyra-approved-graphic-pattern-grid-2,.sonyra-approved-graphic-pattern-layers{grid-template-columns:1fr!important;}.sonyra-approved-graphic-pattern-types{grid-template-columns:1fr!important;}.sonyra-approved-graphic-pattern-colors{display:grid!important;grid-template-columns:1fr!important;}.sonyra-approved-graphic-pattern-color{width:100%!important;max-width:none!important;grid-template-columns:54px minmax(0,1fr)!important;}}'
+	    '@media (max-width:760px){.sonyra-color-controller__modal-body-pattern{padding:0 20px!important;}.sonyra-approved-graphic-pattern-top,.sonyra-approved-graphic-pattern-grid-2,.sonyra-approved-graphic-pattern-layers{grid-template-columns:1fr!important;}.sonyra-approved-graphic-pattern-types{grid-template-columns:1fr!important;}.sonyra-approved-graphic-pattern-colors{display:grid!important;grid-template-columns:1fr!important;}.sonyra-approved-graphic-pattern-color{width:100%!important;max-width:none!important;grid-template-columns:54px minmax(0,1fr)!important;}}',
+	    '@media (max-width:720px){.sonyra-color-controller__modal--pattern-coming-soon .sonyra-color-controller__pattern-coming-soon-card{border-radius:20px!important;padding:22px!important;}.sonyra-color-controller__pattern-coming-soon-title{font-size:24px!important;}}'
 	  ].join('\n');
 
 	  document.head.appendChild(style);
@@ -2931,34 +2938,46 @@ function getColorControllerModalCopy(modal) {
 		});
 	}
 
-	function selectPatternSourceChoice(kind) {
-		if (!state.modal || state.modal.type !== 'pattern' || !state.modal.draft) {
-			return;
-		}
+	function renderPatternComingSoonNotice() {
+  var wrap = document.createElement('div');
+  var card = document.createElement('div');
+  var status = document.createElement('div');
+  var title = document.createElement('h3');
+  var text = document.createElement('p');
+  var hint = document.createElement('p');
+  wrap.className = 'sonyra-color-controller__pattern-coming-soon';
+  card.className = 'sonyra-color-controller__pattern-coming-soon-card';
+  status.className = 'sonyra-color-controller__pattern-coming-soon-status';
+  title.className = 'sonyra-color-controller__pattern-coming-soon-title';
+  text.className = 'sonyra-color-controller__pattern-coming-soon-text';
+  hint.className = 'sonyra-color-controller__pattern-coming-soon-hint';
+  status.textContent = getI18n('manager.design.colors.pattern_coming_soon_status');
+  title.textContent = getI18n('manager.design.colors.pattern_coming_soon_title');
+  text.textContent = getI18n('manager.design.colors.pattern_coming_soon_text');
+  hint.textContent = getI18n('manager.design.colors.pattern_coming_soon_hint');
+  card.appendChild(status);
+  card.appendChild(title);
+  card.appendChild(text);
+  card.appendChild(hint);
+  wrap.appendChild(card);
+  return wrap;
+}
+function openPatternComingSoonModal() {
+  state.modal = {
+    type: 'pattern_coming_soon'
+  };
+  renderModal();
+}
 
-		state.modal.patternSourceSelected = true;
+function selectPatternSourceChoice(source) {
+  if (source === 'graphic' || source === 'image' || source === 'image_pattern') {
+    openPatternComingSoonModal();
+    return;
+  }
+  openPatternComingSoonModal();
+}
 
-		if (kind === 'image') {
-			state.modal.draft.editor_kind = 'image';
-			state.modal.draft.pattern_type = 'image_pattern';
-		} else {
-			state.modal.draft.editor_kind = 'graphic';
-			state.modal.draft.pattern_type = state.modal.draft.pattern_type && state.modal.draft.pattern_type !== 'image_pattern'
-				? state.modal.draft.pattern_type
-				: getDefaultPatternType();
-		}
-
-		state.modal.patternType = state.modal.draft.pattern_type;
-
-		state.modal.groupOpen = createPatternGroupState(
-			state.modal.draft.editor_kind,
-			state.modal.draft.pattern_type
-		);
-
-		rerenderActiveModal();
-	}
-
-	function buildPatternGroupBody(modal, definition, group) {
+function buildPatternGroupBody(modal, definition, group) {
 		var body = createNode('div', 'sonyra-color-controller__pattern-group-fields');
 
 		if (group.media) {
@@ -3490,6 +3509,14 @@ function getColorControllerModalCopy(modal) {
 		var title = chrome.title;
 		var description = chrome.description;
 		var body = chrome.body;
+
+  if (state.modal && state.modal.type === 'pattern_coming_soon') {
+    body.appendChild(renderPatternComingSoonNotice());
+    if (footer && footer.parentNode) {
+      footer.parentNode.removeChild(footer);
+    }
+    modal.classList.add('sonyra-color-controller__modal--pattern-coming-soon');
+  }
 		var footer = chrome.footer;
 		var cancel = createButton('sonyra-manager-pages-secondary', t('manager.pages.actions.cancel'));
 		var save = createButton('sonyra-manager-pages-primary', state.modal.loading ? t('manager.pages.actions.saving') : t('manager.pages.actions.save'));
