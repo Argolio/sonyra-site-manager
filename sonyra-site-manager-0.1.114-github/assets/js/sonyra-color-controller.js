@@ -2963,10 +2963,10 @@ function getColorControllerModalCopy(modal) {
   title.className = 'sonyra-color-controller__pattern-coming-soon-title';
   text.className = 'sonyra-color-controller__pattern-coming-soon-text';
   hint.className = 'sonyra-color-controller__pattern-coming-soon-hint';
-  status.textContent = getI18n('manager.design.colors.pattern_coming_soon_status');
-  title.textContent = getI18n('manager.design.colors.pattern_coming_soon_title');
-  text.textContent = getI18n('manager.design.colors.pattern_coming_soon_text');
-  hint.textContent = getI18n('manager.design.colors.pattern_coming_soon_hint');
+  status.textContent = t('manager.design.colors.pattern_coming_soon_status');
+  title.textContent = t('manager.design.colors.pattern_coming_soon_title');
+  text.textContent = t('manager.design.colors.pattern_coming_soon_text');
+  hint.textContent = t('manager.design.colors.pattern_coming_soon_hint');
   card.appendChild(status);
   card.appendChild(title);
   card.appendChild(text);
