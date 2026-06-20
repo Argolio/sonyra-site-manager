@@ -4183,12 +4183,14 @@ function buildPatternGroupBody(modal, definition, group) {
 
 		if (create) {
 			event.preventDefault();
-			if (String(create.getAttribute('data-color-create') || getCurrentEntityType()) === 'patterns') {
+			var createType = String(create.getAttribute('data-color-create') || getCurrentEntityType()).trim();
+			if (createType === 'pattern' || createType === 'patterns') {
 				openPatternComingSoonModal();
 				render();
 				return;
 			}
-			openColorLibraryFormModal(String(create.getAttribute('data-color-create') || getCurrentEntityType()), 'create', null);
+			openColorLibraryFormModal(createType, 'create', null);
+			render();
 			return;
 		}
 
